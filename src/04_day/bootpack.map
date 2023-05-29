@@ -1,0 +1,30 @@
+text size :    610(0x00262)
+data size :      0(0x00000)
+bss  size :      0(0x00000)
+
+0x00000024 : (.text)
+0x00000024 : _setColor
+0x00000047 : _drawFullCircle
+0x0000010C : _HariMain
+0x00000223 : _io_hlt
+0x00000223 : (.text)
+0x00000225 : _io_cli
+0x00000227 : _io_sti
+0x00000229 : _io_stihlt
+0x0000022C : _io_in8
+0x00000237 : _io_in16
+0x00000243 : _io_in32
+0x00000249 : _io_out8
+0x00000253 : _io_out16
+0x0000025E : _io_out32
+0x00000268 : _io_load_eflags
+0x0000026B : _io_store_eflags
+0x00000272 : _write_mem8
+0x0000027D : (.text)
+0x0000027D : _HariStartup
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)

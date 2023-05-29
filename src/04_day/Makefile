@@ -13,8 +13,8 @@ IMGTOL   = $(TOOLPATH)imgtol.com
 COPY     = copy
 DEL      = del
 
-C_SRC = bootpack.c
-# C_SRC = demo.c
+# C_SRC = bootpack.c
+C_SRC = demo.c
 
 # 默认动作
 

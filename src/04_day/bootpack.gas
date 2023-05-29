@@ -1,0 +1,221 @@
+	.file	"demo.c"
+	.text
+	.balign 2
+.globl _setColor
+	.def	_setColor;	.scl	2;	.type	32;	.endef
+_setColor:
+	pushl	%ebp
+	movl	%esp, %ebp
+	movl	12(%ebp), %eax
+	movl	16(%ebp), %edx
+	imull	$320, %eax, %eax
+	addl	8(%ebp), %eax
+	movl	%edx, 12(%ebp)
+	addl	$655360, %eax
+	movl	%eax, 8(%ebp)
+	popl	%ebp
+	jmp	_write_mem8
+	.balign 2
+.globl _drawFullCircle
+	.def	_drawFullCircle;	.scl	2;	.type	32;	.endef
+_drawFullCircle:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebx
+	subl	$20, %esp
+	movl	12(%ebp), %eax
+	movl	8(%ebp), %edi
+	movl	%eax, -16(%ebp)
+	movl	16(%ebp), %eax
+	movl	%eax, -20(%ebp)
+	leal	160(%edi), %esi
+	pushl	%eax
+	movl	-16(%ebp), %ebx
+	addl	$100, %ebx
+	pushl	%ebx
+	pushl	%esi
+	call	_setColor
+	movl	$100, %eax
+	pushl	-20(%ebp)
+	subl	-16(%ebp), %eax
+	movl	%eax, -24(%ebp)
+	pushl	%eax
+	pushl	%esi
+	movl	$160, %esi
+	subl	%edi, %esi
+	call	_setColor
+	pushl	-20(%ebp)
+	pushl	%ebx
+	pushl	%esi
+	call	_setColor
+	addl	$36, %esp
+	pushl	-20(%ebp)
+	pushl	-24(%ebp)
+	pushl	%esi
+	call	_setColor
+	leal	100(%edi), %eax
+	pushl	-20(%ebp)
+	movl	%eax, -28(%ebp)
+	pushl	%eax
+	movl	-16(%ebp), %esi
+	addl	$160, %esi
+	pushl	%esi
+	call	_setColor
+	pushl	-20(%ebp)
+	movl	$100, -32(%ebp)
+	subl	%edi, -32(%ebp)
+	pushl	-32(%ebp)
+	pushl	%esi
+	movl	$160, %esi
+	call	_setColor
+	addl	$36, %esp
+	pushl	-20(%ebp)
+	pushl	-28(%ebp)
+	subl	-16(%ebp), %esi
+	pushl	%esi
+	call	_setColor
+	movl	%esi, 8(%ebp)
+	movl	-20(%ebp), %eax
+	addl	$12, %esp
+	movl	%eax, 16(%ebp)
+	movl	-32(%ebp), %eax
+	movl	%eax, 12(%ebp)
+	leal	-12(%ebp), %esp
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	popl	%ebp
+	jmp	_setColor
+	.balign 2
+.globl _HariMain
+	.def	_HariMain;	.scl	2;	.type	32;	.endef
+_HariMain:
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%edi
+	pushl	%esi
+	xorl	%edi, %edi
+	pushl	%ebx
+	xorl	%esi, %esi
+	pushl	%eax
+	movl	$15, %ebx
+	pushl	%eax
+L8:
+	movl	%ebx, %eax
+	movl	$16, %ecx
+	cltd
+	idivl	%ecx
+	movl	%edx, %ebx
+	incl	%ebx
+	movb	%bl, 655360(%edi,%esi)
+	incl	%esi
+	addl	$320, %edi
+	cmpl	$319, %esi
+	jle	L8
+	xorl	%esi, %esi
+L13:
+	movl	%ebx, %eax
+	movl	$16, %ecx
+	cltd
+	idivl	%ecx
+	movl	%edx, %ebx
+	leal	20(%esi), %eax
+	incl	%ebx
+	incl	%esi
+	pushl	%ebx
+	pushl	$20
+	pushl	%eax
+	call	_setColor
+	addl	$12, %esp
+	cmpl	$99, %esi
+	jle	L13
+	xorl	%esi, %esi
+L18:
+	movl	%ebx, %eax
+	movl	$16, %ecx
+	cltd
+	idivl	%ecx
+	movl	%edx, %ebx
+	leal	20(%esi), %eax
+	incl	%ebx
+	incl	%esi
+	pushl	%ebx
+	pushl	%eax
+	pushl	$20
+	call	_setColor
+	addl	$12, %esp
+	cmpl	$49, %esi
+	jle	L18
+	xorl	%esi, %esi
+L23:
+	movl	%ebx, %eax
+	movl	$16, %ecx
+	cltd
+	idivl	%ecx
+	movl	%edx, %ebx
+	leal	20(%esi), %eax
+	incl	%ebx
+	incl	%esi
+	pushl	%ebx
+	pushl	%eax
+	pushl	$120
+	call	_setColor
+	addl	$12, %esp
+	cmpl	$49, %esi
+	jle	L23
+	xorl	%esi, %esi
+L28:
+	movl	%ebx, %eax
+	movl	$16, %ecx
+	cltd
+	idivl	%ecx
+	movl	%edx, %ebx
+	leal	20(%esi), %eax
+	incl	%ebx
+	incl	%esi
+	pushl	%ebx
+	pushl	$70
+	pushl	%eax
+	call	_setColor
+	addl	$12, %esp
+	cmpl	$99, %esi
+	jle	L28
+	xorl	%esi, %esi
+	movl	$50, %edi
+	movl	$-49, -16(%ebp)
+L34:
+	movl	%ebx, %eax
+	movl	$16, %ecx
+	cltd
+	idivl	%ecx
+	movl	%edx, %ebx
+	incl	%ebx
+	pushl	%ebx
+	pushl	%edi
+	pushl	%esi
+	call	_drawFullCircle
+	addl	$12, %esp
+	cmpl	$0, -16(%ebp)
+	js	L49
+	movl	%esi, %eax
+	movl	-16(%ebp), %edx
+	subl	%edi, %eax
+	decl	%edi
+	leal	5(%edx,%eax,2), %edx
+	movl	%edx, -16(%ebp)
+L33:
+	incl	%esi
+	cmpl	%edi, %esi
+	jl	L34
+L35:
+	call	_io_hlt
+	jmp	L35
+L49:
+	movl	-16(%ebp), %eax
+	leal	3(%eax,%esi,2), %eax
+	movl	%eax, -16(%ebp)
+	jmp	L33
+	.def	_io_hlt;	.scl	2;	.type	32;	.endef
+	.def	_write_mem8;	.scl	2;	.type	32;	.endef

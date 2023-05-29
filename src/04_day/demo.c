@@ -29,7 +29,6 @@ void HariMain(void)
 	// 绘制直线
 	for (i = 0; i < 320; i++)
 	{
-
 		color = color % 16;
 		color++;
 		p = (char *)(0xa0000 + i + 320 * i);
