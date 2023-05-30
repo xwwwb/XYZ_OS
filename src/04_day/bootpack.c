@@ -36,21 +36,35 @@ void HariMain(void)
 	ysize = 200;
 
 	/* 根据 0xa0000 + x + y * 320 计算坐标 8*/
+	// 屏幕上方的蓝绿色 也就是 类似桌面壁纸的东西
 	boxfill8(vram, xsize, COL8_008484, 0, 0, xsize - 1, ysize - 29);
+	// 任务栏的上边界的颜色 用于显示出浮雕的效果
 	boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 28, xsize - 1, ysize - 28);
+	// 任务栏的上边界的颜色 用于显示出浮雕的效果
 	boxfill8(vram, xsize, COL8_FFFFFF, 0, ysize - 27, xsize - 1, ysize - 27);
+	// 任务栏色彩填充
 	boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 26, xsize - 1, ysize - 1);
 
+	// 任务栏左边色块 上边界
 	boxfill8(vram, xsize, COL8_FFFFFF, 3, ysize - 24, 59, ysize - 24);
+	// 任务栏左边色块 左边界
 	boxfill8(vram, xsize, COL8_FFFFFF, 2, ysize - 24, 2, ysize - 4);
+	// 任务栏左边色块 下边界
 	boxfill8(vram, xsize, COL8_848484, 3, ysize - 4, 59, ysize - 4);
+	// 任务栏左边色块 右边界
 	boxfill8(vram, xsize, COL8_848484, 59, ysize - 23, 59, ysize - 5);
+	// 任务栏左边色块 下边界黑色条
 	boxfill8(vram, xsize, COL8_000000, 2, ysize - 3, 59, ysize - 3);
+	// 任务栏左边色块 右边界黑色条
 	boxfill8(vram, xsize, COL8_000000, 60, ysize - 24, 60, ysize - 3);
 
+	// 右边方块 上边界
 	boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 24, xsize - 4, ysize - 24);
+	// 右边方块 左边界
 	boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 23, xsize - 47, ysize - 4);
+	// 右边方块 下边界
 	boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize - 3, xsize - 4, ysize - 3);
+	// 右边方块 右边界
 	boxfill8(vram, xsize, COL8_FFFFFF, xsize - 3, ysize - 24, xsize - 3, ysize - 3);
 
 	for (;;)
