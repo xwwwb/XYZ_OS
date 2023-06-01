@@ -10,9 +10,12 @@
 		GLOBAL	_io_in8,  _io_in16,  _io_in32
 		GLOBAL	_io_out8, _io_out16, _io_out32
 		GLOBAL	_io_load_eflags, _io_store_eflags
-		GLOBAL	_load_gdtr, _load_idtr
-
+		GLOBAL	_load_gdtr, _load_idtr, _HariMain
+		EXTERN	_xyz_entry
 [SECTION .text]
+
+_HariMain:
+		CALL _xyz_entry
 
 _io_hlt:	; void io_hlt(void);
 		HLT
