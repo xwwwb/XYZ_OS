@@ -1,13 +1,14 @@
 /* asmhead.nas */
-struct BOOTINFO { /* 0x0ff0-0x0fff */
-	char cyls; /* 启动区读磁盘读到此为止 */
-	char leds; /* 启动时键盘的LED的状态 */
+struct BOOTINFO
+{							/* 0x0ff0-0x0fff */
+	char cyls;	/* 启动区读磁盘读到此为止 */
+	char leds;	/* 启动时键盘的LED的状态 */
 	char vmode; /* 显卡模式为多少位彩色 */
 	char reserve;
 	short scrnx, scrny; /* 画面分辨率 */
 	char *vram;
 };
-#define ADR_BOOTINFO	0x00000ff0
+#define ADR_BOOTINFO 0x00000ff0
 
 /* naskfunc.nas */
 void io_hlt(void);
@@ -29,7 +30,8 @@ void asm_inthandler2c(void);
 unsigned int memtest_sub(unsigned int start, unsigned int end);
 
 /* fifo.c */
-struct FIFO32 {
+struct FIFO32
+{
 	int *buf;
 	int p, q, size, free, flags;
 };
@@ -47,31 +49,33 @@ void putfont8(char *vram, int xsize, int x, int y, char c, char *font);
 void putfonts8_asc(char *vram, int xsize, int x, int y, char c, unsigned char *s);
 void init_mouse_cursor8(char *mouse, char bc);
 void putblock8_8(char *vram, int vxsize, int pxsize,
-	int pysize, int px0, int py0, char *buf, int bxsize);
-#define COL8_000000		0
-#define COL8_FF0000		1
-#define COL8_00FF00		2
-#define COL8_FFFF00		3
-#define COL8_0000FF		4
-#define COL8_FF00FF		5
-#define COL8_00FFFF		6
-#define COL8_FFFFFF		7
-#define COL8_C6C6C6		8
-#define COL8_840000		9
-#define COL8_008400		10
-#define COL8_848400		11
-#define COL8_000084		12
-#define COL8_840084		13
-#define COL8_008484		14
-#define COL8_848484		15
+								 int pysize, int px0, int py0, char *buf, int bxsize);
+#define COL8_000000 0
+#define COL8_FF0000 1
+#define COL8_00FF00 2
+#define COL8_FFFF00 3
+#define COL8_0000FF 4
+#define COL8_FF00FF 5
+#define COL8_00FFFF 6
+#define COL8_FFFFFF 7
+#define COL8_C6C6C6 8
+#define COL8_840000 9
+#define COL8_008400 10
+#define COL8_848400 11
+#define COL8_000084 12
+#define COL8_840084 13
+#define COL8_008484 14
+#define COL8_848484 15
 
 /* dsctbl.c */
-struct SEGMENT_DESCRIPTOR {
+struct SEGMENT_DESCRIPTOR
+{
 	short limit_low, base_low;
 	char base_mid, access_right;
 	char limit_high, base_high;
 };
-struct GATE_DESCRIPTOR {
+struct GATE_DESCRIPTOR
+{
 	short offset_low, selector;
 	char dw_count, access_right;
 	short offset_high;
@@ -79,41 +83,42 @@ struct GATE_DESCRIPTOR {
 void init_gdtidt(void);
 void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
 void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
-#define ADR_IDT			0x0026f800
-#define LIMIT_IDT		0x000007ff
-#define ADR_GDT			0x00270000
-#define LIMIT_GDT		0x0000ffff
-#define ADR_BOTPAK		0x00280000
-#define LIMIT_BOTPAK	0x0007ffff
-#define AR_DATA32_RW	0x4092
-#define AR_CODE32_ER	0x409a
-#define AR_INTGATE32	0x008e
+#define ADR_IDT 0x0026f800
+#define LIMIT_IDT 0x000007ff
+#define ADR_GDT 0x00270000
+#define LIMIT_GDT 0x0000ffff
+#define ADR_BOTPAK 0x00280000
+#define LIMIT_BOTPAK 0x0007ffff
+#define AR_DATA32_RW 0x4092
+#define AR_CODE32_ER 0x409a
+#define AR_INTGATE32 0x008e
 
 /* int.c */
 void init_pic(void);
 void inthandler27(int *esp);
-#define PIC0_ICW1		0x0020
-#define PIC0_OCW2		0x0020
-#define PIC0_IMR		0x0021
-#define PIC0_ICW2		0x0021
-#define PIC0_ICW3		0x0021
-#define PIC0_ICW4		0x0021
-#define PIC1_ICW1		0x00a0
-#define PIC1_OCW2		0x00a0
-#define PIC1_IMR		0x00a1
-#define PIC1_ICW2		0x00a1
-#define PIC1_ICW3		0x00a1
-#define PIC1_ICW4		0x00a1
+#define PIC0_ICW1 0x0020
+#define PIC0_OCW2 0x0020
+#define PIC0_IMR 0x0021
+#define PIC0_ICW2 0x0021
+#define PIC0_ICW3 0x0021
+#define PIC0_ICW4 0x0021
+#define PIC1_ICW1 0x00a0
+#define PIC1_OCW2 0x00a0
+#define PIC1_IMR 0x00a1
+#define PIC1_ICW2 0x00a1
+#define PIC1_ICW3 0x00a1
+#define PIC1_ICW4 0x00a1
 
 /* keyboard.c */
 void inthandler21(int *esp);
 void wait_KBC_sendready(void);
 void init_keyboard(struct FIFO32 *fifo, int data0);
-#define PORT_KEYDAT		0x0060
-#define PORT_KEYCMD		0x0064
+#define PORT_KEYDAT 0x0060
+#define PORT_KEYCMD 0x0064
 
 /* mouse.c */
-struct MOUSE_DEC {
+struct MOUSE_DEC
+{
 	unsigned char buf[3], phase;
 	int x, y, btn;
 };
@@ -123,12 +128,14 @@ int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 
 /* memory.c */
 #define MEMMAN_FREES 4090 /* 大约是32KB*/
-#define MEMMAN_ADDR			0x003c0000
+#define MEMMAN_ADDR 0x003c0000
 
-struct FREEINFO { /* 可用信息 */
+struct FREEINFO
+{ /* 可用信息 */
 	unsigned int addr, size;
 };
-struct MEMMAN { /* 内存管理 */
+struct MEMMAN
+{ /* 内存管理 */
 	int frees, maxfrees, lostsize, losts;
 	struct FREEINFO free[MEMMAN_FREES];
 };
@@ -142,16 +149,18 @@ unsigned int memman_alloc_4k(struct MEMMAN *man, unsigned int size);
 int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size);
 
 /* sheet.c */
-#define MAX_SHEETS		256
-#define SHEET_USE  1
+#define MAX_SHEETS 256
+#define SHEET_USE 1
 
-struct SHEET {
+struct SHEET
+{
 	unsigned char *buf;
 	int bxsize, bysize, vx0, vy0, col_inv, height, flags;
 	struct SHTCTL *ctl;
 };
 
-struct SHTCTL {
+struct SHTCTL
+{
 	unsigned char *vram, *map;
 	int xsize, ysize, top;
 	struct SHEET *sheets[MAX_SHEETS];
@@ -168,13 +177,15 @@ void sheet_free(struct SHEET *sht);
 
 /* timer.c */
 #define MAX_TIMER 500
-struct TIMER {
+struct TIMER
+{
 	struct TIMER *next;
 	unsigned int timeout, flags;
 	struct FIFO32 *fifo;
 	int data;
 };
-struct TIMERCTL {
+struct TIMERCTL
+{
 	unsigned int count, next;
 	struct TIMER *t0;
 	struct TIMER timers0[MAX_TIMER];
@@ -188,3 +199,32 @@ void timer_init(struct TIMER *timer, struct FIFO32 *fifo, int data);
 void timer_settime(struct TIMER *timer, unsigned int timeout);
 void inthandler20(int *esp);
 
+/**CMOS操作端口**/
+#define cmos_index 0x70
+#define cmos_data 0x71
+/**CMOS中相关信息偏移*/
+#define CMOS_CUR_SEC 0x0	 // CMOS中当前秒值(BCD)
+#define CMOS_ALA_SEC 0x1	 // CMOS中报警秒值(BCD)
+#define CMOS_CUR_MIN 0x2	 // CMOS中当前分钟(BCD)
+#define CMOS_ALA_MIN 0x3	 // CMOS中报警分钟(BCD)
+#define CMOS_CUR_HOUR 0x4	 // CMOS中当前小时(BCD)
+#define CMOS_ALA_HOUR 0x5	 // CMOS中报警小时(BCD)
+#define CMOS_WEEK_DAY 0x6	 // CMOS中一周中当前天(BCD)
+#define CMOS_MON_DAY 0x7	 // CMOS中一月中当前日(BCD)
+#define CMOS_CUR_MON 0x8	 // CMOS中当前月份(BCD)
+#define CMOS_CUR_YEAR 0x9	 // CMOS中当前年份(BCD)
+#define CMOS_DEV_TYPE 0x12 // CMOS中驱动器格式
+#define CMOS_CUR_CEN 0x32	 // CMOS中当前世纪(BCD)
+
+#define BCD_HEX(n) ((n >> 4) * 10) + (n & 0xf) // BCD转16进制
+
+#define BCD_ASCII_first(n) (((n << 4) >> 4) + 0x30) // 取BC的个位并以字符输出,来自UdoOS
+#define BCD_ASCII_S(n) ((n << 4) + 0x30)						// 取BCD的十位并以字符输出,来自UdoOS
+
+unsigned int get_hour_hex();
+unsigned int get_min_hex();
+unsigned int get_sec_hex();
+unsigned int get_day_of_month();
+unsigned int get_day_of_week();
+unsigned int get_mon_hex();
+unsigned int get_year();
