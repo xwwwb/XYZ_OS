@@ -131,22 +131,21 @@
   >具体算法没有深究，不影响看下去
   >
   >哨兵完全没看懂
-<<<<<<< HEAD
 
 - [ ] 第十六天算法 没看懂
 
   > 任务管理，没有逐句读代码
-
-
-=======
-  
 
 - [ ] 多任务没看懂 第17天的代码 多任务切换的时候 应该不能多次执行console_task的吧，这里面包括了初始化
 
   > 是不是实际上多任务是记住了运行位置 然后接着运行位置？ 怎么实现的
 
 - [ ] cmdline运行完一个程序后 如何清空的
->>>>>>> b6a00ab932c1788c30d7511966f2a1659f6075e5
+
+- [ ] 对FAT支持这里，为什么突然出现了压缩算法
+
+  > 
+
 
 ## 实验截图
 
@@ -343,3 +342,94 @@ harib04g 新增代码为开启鼠标电路 有关重启中断的讲解也在上�
 后面的算法有些没看懂，先跳过
 
 ### 第十七天
+
+### 第十九天
+
+算法中出现的finfo是指数据开始存放的的地址，x从0到224是因为文件信息最存放224个
+
+如果finfo的第一个字节为0xe5则代表文件被删除了，第一个字节为0x00代表不包含任何文件名信息，type中存放属性
+
+下面对hlt应用的代码注释
+
+readfat函数其实是读入的fat表 而不是镜像文件
+
+fat表有两份 其中一份就是0x000200处
+
+镜像的2600处存放着文件名字等信息 也就是finfo 
+
+FAT表存放在0x000200处 存放的是文件下一块的位置的信息
+
+读取大文件的时候首先finfo中的clustno = 2 簇号是2 根据簇号计算出文件位置
+
+然后查找FAT表的第2项 这里记录着下一个簇号是003 然后3号记录着4 4号记录着5 直到读到FAT为FFF的表明结束了
+
+FAT12文件系统 文件名都是大写
+
+```C
+else if (strcmp(cmdline, "hlt") == 0)
+{
+  /*启动应用程序hlt.hrb */
+  for (y = 0; y < 11; y++)
+  {
+    s[y] = ' ';
+  }
+  s[0] = 'H';
+  s[1] = 'L';
+  s[2] = 'T';
+  s[8] = 'H';
+  s[9] = 'R';
+  s[10] = 'B';
+  // 224是因为文件信息描述块只能存224个信息
+  for (x = 0; x < 224;)
+  {
+    // 排除空文件
+    if (finfo[x].name[0] == 0x00)
+    {
+      break;
+    }
+    // 0x18
+    // 00011000
+    // 想要和0x18与运算得到0 那么 type等于
+    // 00011000
+    // xxx00xxx
+    // 也就是说type的第四位和第五位必须是0
+    // 课本说 一般的文件不是0x20就是0x00 0x20是00100000 符合条件
+    if ((finfo[x].type & 0x18) == 0)
+    {
+      // 比较文件名
+      for (y = 0; y < 11; y++)
+      {
+        if (finfo[x].name[y] != s[y])
+        {
+          goto hlt_next_file;
+        }
+      }
+      break; /*找到文件*/
+    }
+  hlt_next_file:
+    x++;
+  }
+  // 运行到此说明finfo[x]是hlt.hrb
+  if (x < 224 && finfo[x].name[0] != 0x00)
+  {
+    /*找到文件的情况*/
+    // 开辟内存空间载入程序
+    p = (char *)memman_alloc_4k(memman, finfo[x].size);
+    // 读取磁盘文件到p
+    file_loadfile(finfo[x].clustno, finfo[x].size, p, fat, (char *)(ADR_DISKIMG + 0x003e00));
+    // 设置段号 段号1003会访问到p
+    set_segmdesc(gdt + 1003, finfo[x].size - 1, (int)p, AR_CODE32_ER);
+    // 跳转到段号1003
+    farjmp(0, 1003 * 8);
+    memman_free_4k(memman, (int)p, finfo[x].size);
+  }
+  else
+  {
+    /*没有找到文件的情况*/
+    putfonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, "File not found.", 15);
+    cursor_y = cons_newline(cursor_y, sheet);
+  }
+  cursor_y = cons_newline(cursor_y, sheet);
+}
+```
+
