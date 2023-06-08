@@ -249,7 +249,7 @@ void HariMain(void) {
                     mx += mdec.x * mdec.scale;
                     my += mdec.y * mdec.scale;
                     char *text;
-                    sprintf(text, "Press the right button to increase mouse speed:%d", mdec.scale);
+                    sprintf(text, "Press the middle key to increase mouse speed:%d", mdec.scale);
 
                     putfonts8_asc_sht_rgbbk(sht_back, 0, 200, COL8_FFFFFF, text, 60, 51, 65, 85);
 
@@ -315,8 +315,8 @@ void HariMain(void) {
                         /*没有按下左键*/
                         mmx = -1; /*返回通常模式*/
                     }
-                    // 按下右键
-                    if ((mdec.btn & 0x02) != 0) {
+                    // 按下中键
+                    if ((mdec.btn & 0x04) != 0) {
                         if (mdec.scale == 10) {
                             mdec.scale = 1;
                         }
