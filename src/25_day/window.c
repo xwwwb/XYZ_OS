@@ -34,15 +34,21 @@ void make_wtitle8(unsigned char *buf, int xsize, char *title, char act) {
             "@@@@@@@@@@@@@@@@"};
     int x, y;
     char c, tc, tbc;
+    int r, g, b;
     if (act != 0) {
         tc = COL8_FFFFFF;
-        tbc = COL8_000084;
+        r = 30;
+        g = 41;
+        b = 59;
     }
     else {
         tc = COL8_C6C6C6;
-        tbc = COL8_848484;
+        r = 30;
+        g = 41;
+        b = 59;
     }
-    boxfill8(buf, xsize, tbc, 3, 3, xsize - 4, 20);
+
+    boxfillrgb(buf, xsize, 3, 3, xsize - 4, 20, r, g, b);
     putfonts8_asc(buf, xsize, 24, 4, tc, title);
     for (y = 0; y < 14; y++) {
         for (x = 0; x < 16; x++) {

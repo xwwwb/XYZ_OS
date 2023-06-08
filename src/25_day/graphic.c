@@ -61,6 +61,30 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
     return;
 }
 
+unsigned char rgb2pal(int r, int g, int b, int x, int y) {
+    static int table[4] = {3, 1, 0, 2};
+    int i;
+    x &= 1; /*判断是偶数还是奇数*/
+    y &= 1;
+    i = table[x + y * 2]; /*用来生成中间色的常量*/
+    r = (r * 21) / 256;   /* r为0～20*/
+    g = (g * 21) / 256;
+    b = (b * 21) / 256;
+    r = (r + i) / 4; /* r为0～5*/
+    g = (g + i) / 4;
+    b = (b + i) / 4;
+    return 16 + r + g * 6 + b * 36;
+}
+
+
+void boxfillrgb(unsigned char *vram, int xsize, int x0, int y0, int x1, int y1, int r, int g, int b) {
+    int x, y;
+    for (y = y0; y <= y1; y++) {
+        for (x = x0; x <= x1; x++) { vram[y * xsize + x] = rgb2pal(r, g, b, x, y); }
+    }
+    return;
+}
+
 void drawFullCircle(int x0, int y0, int x, int y, int color, int xsize, char *vram) {
     int circle_x = x0;
     int circle_y = y0;
@@ -93,7 +117,7 @@ void drawcircle(char *vram, int x0, int y0, int r0, unsigned char c, int xsize) 
 
 
 void init_screen8(char *vram, int x, int y) {
-    boxfill8(vram, x, COL8_008484, 0, 0, x - 1, y - 29);
+    boxfillrgb(vram, x, 0, 0, x - 1, y - 29, 51, 65, 85);
     boxfill8(vram, x, COL8_C6C6C6, 0, y - 28, x - 1, y - 28);
     boxfill8(vram, x, COL8_FFFFFF, 0, y - 27, x - 1, y - 27);
     boxfill8(vram, x, COL8_C6C6C6, 0, y - 26, x - 1, y - 1);
