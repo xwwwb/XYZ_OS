@@ -310,3 +310,6 @@ unsigned int get_year();
 
 void shutdown(void);
 void reboot(void);
+
+void bootcover(struct BOOTINFO *binfo, int step);
+void wait_a_while();

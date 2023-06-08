@@ -77,7 +77,11 @@ next:
 		CMP		CH,CYLS
 		JB		readloop		; CH < CYLS 跳转到readloop
 
+		MOV		SI,welcome
+		JMP		putloop
+
 ; 读取完毕，跳转到haribote.sys执行！
+start:
 		MOV		[0x0ff0],CH		; IPLがどこまで読んだのかをメモ
 		JMP		0xc200
 
@@ -95,8 +99,25 @@ putloop:
 		JMP		putloop
 
 fin:
+		MOV		AH,0x00
+finloop:
+		; AH 加一
+		ADD		AH,1
 		HLT						; 让CPU停止，等待指令
-		JMP		fin				; 无限循环
+		CMP		AH,0x8F
+		JE		start
+		JMP		finloop
+
+
+welcome:
+		DB		0x0a, 0x0a	; 换行多次
+		DB		"Hello, XYZ!!!"
+		DB		0x0a
+		DB    "System is starting..."
+		DB		0x0a
+		DB    "Please wait a moment."
+		DB		0x0a			; 换行
+		DB		0
 
 msg:
 		DB		0x0a, 0x0a		; 换行两次

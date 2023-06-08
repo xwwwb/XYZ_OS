@@ -10,6 +10,17 @@ void keywin_on(struct SHEET *key_win);
 
 void HariMain(void) {
     struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
+    bootcover(binfo, 0);
+    wait_a_while();
+    bootcover(binfo, 1);
+    wait_a_while();
+    bootcover(binfo, 2);
+    wait_a_while();
+    wait_a_while();
+    bootcover(binfo, 3);
+    wait_a_while();
+    bootcover(binfo, 4);
+    // wait_a_while();
     struct SHTCTL *shtctl;
     char s[40];
     struct FIFO32 fifo, keycmd;

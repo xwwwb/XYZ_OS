@@ -19,6 +19,7 @@
 		GLOBAL	_memtest_sub
 		GLOBAL	_farjmp, _farcall
 		GLOBAL	_asm_hrb_api, _start_app ,_shutdown,_reboot
+		GLOBAL  _wait_a_while
 		EXTERN	_inthandler20, _inthandler21
 		EXTERN	_inthandler2c, _inthandler0d
 		EXTERN	_inthandler0c
@@ -382,3 +383,10 @@ _reboot:
 mov al,0feh
 out 64h,al
 
+_wait_a_while:
+	; HLT执行100次
+		MOV		ECX,50
+.wait1:
+		HLT
+		LOOP	.wait1
+		RET
