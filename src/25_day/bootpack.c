@@ -105,8 +105,8 @@ void HariMain(void) {
     my = (binfo->scrny - 28 - 16) / 2;
 
     sheet_slide(sht_back, 0, 0);
-    sheet_slide(sht_cons[1], 56, 6);
-    sheet_slide(sht_cons[0], 8, 2);
+    sheet_slide(sht_cons[1], 100, 30);
+    sheet_slide(sht_cons[0], 500, 50);
     sheet_slide(sht_mouse, mx, my);
     sheet_updown(sht_back, 0);
     sheet_updown(sht_cons[1], 1);
@@ -126,6 +126,12 @@ void HariMain(void) {
         putfont16(buf_back, binfo->scrnx, 8 + i * 16, 8, COL8_FFFFFF, font);
     }
     sheet_refresh(sht_back, 0, 0, binfo->scrnx, 32);
+
+    // 右下角时间显示
+    struct TIMER *system_timer;
+    system_timer = timer_alloc();
+    timer_init(system_timer, &fifo, 111);
+    timer_settime(system_timer, 100);
 
     for (;;) {
         if (fifo32_status(&keycmd) > 0 && keycmd_wait < 0) {
@@ -292,6 +298,13 @@ void HariMain(void) {
                         mmx = -1; /*返回通常模式*/
                     }
                 }
+            }
+            else if (i == 111) {
+                // 时间处理
+                sprintf(s, "%d-%02d-%02d %02d:%02d:%02d", get_year(), get_mon_hex(), get_day_of_month(), get_hour_hex(), get_min_hex(), get_sec_hex());
+                putfonts8_asc_sht(sht_back, binfo->scrnx - 160, binfo->scrny - 20, COL8_000000, COL8_C6C6C6, s, 19);
+                sheet_refresh(sht_back, binfo->scrnx - 160, binfo->scrny - 20, binfo->scrnx - 45 + 5 * 8, binfo->scrny - 50 + 16);
+                timer_settime(system_timer, 100);
             }
         }
     }
