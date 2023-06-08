@@ -19,7 +19,6 @@ void bootcover(struct BOOTINFO *binfo, int step) {
         }
     }
     // 绘制矩形
-
     int width, height = 40;
     int x = 0, y = binfo->scrny / 2 - height / 2;
     if (step == 0) {

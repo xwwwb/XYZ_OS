@@ -132,20 +132,745 @@
   >
   >哨兵完全没看懂
 
-- [ ] 第十六天算法 没看懂
+- [x] 第十六天算法 没看懂
 
   > 任务管理，没有逐句读代码
 
-- [ ] 多任务没看懂 第17天的代码 多任务切换的时候 应该不能多次执行console_task的吧，这里面包括了初始化
+- [x] 多任务没看懂 第17天的代码 多任务切换的时候 应该不能多次执行console_task的吧，这里面包括了初始化
 
   > 是不是实际上多任务是记住了运行位置 然后接着运行位置？ 怎么实现的
 
-- [ ] cmdline运行完一个程序后 如何清空的
+- [x] cmdline运行完一个程序后 如何清空的
 
-- [ ] 对FAT支持这里，为什么突然出现了压缩算法
+- [x] 对FAT支持这里，为什么突然出现了压缩算法
 
-  > 
+  > FAT是FAT文件系统中的一个表 用于记录文件的链接位置 之前看的那些是文件信息描述表 FAT表和文件信息描述表不在一个位置
 
+## 实现的新功能
+
+#### 右下角时钟
+
+![动画](./image_md/%E5%8A%A8%E7%94%BB-1686246000192-2.gif)
+
+经过查阅资料可得到获取CMOS信息的常量
+
+编写如下代码拿到时间
+
+```C
+// cmos.c
+#include "bootpack.h"
+
+unsigned char read_cmos(unsigned char p) {
+    unsigned char data;
+    io_out8(cmos_index, p);
+    data = io_in8(cmos_data);
+    io_out8(cmos_index, 0x80);
+    return data;
+}
+unsigned int get_hour_hex() {
+    return BCD_HEX(read_cmos(CMOS_CUR_HOUR));
+}
+unsigned int get_min_hex() {
+    return BCD_HEX(read_cmos(CMOS_CUR_MIN));
+}
+unsigned int get_sec_hex() {
+    return BCD_HEX(read_cmos(CMOS_CUR_SEC));
+}
+unsigned int get_day_of_month() {
+    return BCD_HEX(read_cmos(CMOS_MON_DAY));
+}
+unsigned int get_day_of_week() {
+    return BCD_HEX(read_cmos(CMOS_WEEK_DAY));
+}
+unsigned int get_mon_hex() {
+    return BCD_HEX(read_cmos(CMOS_CUR_MON));
+}
+unsigned int get_year() {
+    return (BCD_HEX(read_cmos(CMOS_CUR_CEN)) * 100) + BCD_HEX(read_cmos(CMOS_CUR_YEAR)) - 30 + 2010;
+}
+```
+
+```C
+/**CMOS操作端口**/
+#define cmos_index 0x70
+#define cmos_data 0x71
+/**CMOS中相关信息偏移*/
+#define CMOS_CUR_SEC 0x0  // CMOS中当前秒值(BCD)
+#define CMOS_ALA_SEC 0x1  // CMOS中报警秒值(BCD)
+#define CMOS_CUR_MIN 0x2  // CMOS中当前分钟(BCD)
+#define CMOS_ALA_MIN 0x3  // CMOS中报警分钟(BCD)
+#define CMOS_CUR_HOUR 0x4 // CMOS中当前小时(BCD)
+#define CMOS_ALA_HOUR 0x5 // CMOS中报警小时(BCD)
+#define CMOS_WEEK_DAY 0x6 // CMOS中一周中当前天(BCD)
+#define CMOS_MON_DAY 0x7  // CMOS中一月中当前日(BCD)
+#define CMOS_CUR_MON 0x8  // CMOS中当前月份(BCD)
+#define CMOS_CUR_YEAR 0x9 // CMOS中当前年份(BCD)
+#define CMOS_DEV_TYPE 0x12// CMOS中驱动器格式
+#define CMOS_CUR_CEN 0x32 // CMOS中当前世纪(BCD)
+
+#define BCD_HEX(n) ((n >> 4) * 10) + (n & 0xf)// BCD转16进制
+
+#define BCD_ASCII_first(n) (((n << 4) >> 4) + 0x30)// 取BC的个位并以字符输出,来自UdoOS
+#define BCD_ASCII_S(n) ((n << 4) + 0x30)           // 取BCD的十位并以字符输出,来自UdoOS
+
+unsigned int get_hour_hex();
+unsigned int get_min_hex();
+unsigned int get_sec_hex();
+unsigned int get_day_of_month();
+unsigned int get_day_of_week();
+unsigned int get_mon_hex();
+unsigned int get_year();
+```
+
+此代码运行在定时器中 刷新时间
+
+```C
+// bootpack.c
+sprintf(s, "%d-%02d-%02d %02d:%02d:%02d", get_year(), get_mon_hex(), get_day_of_month(), get_hour_hex(), get_min_hex(), get_sec_hex());
+
+putfonts8_asc_sht(sht_back, binfo->scrnx - 160, binfo->scrny - 20, COL8_000000, COL8_C6C6C6, s, 19);
+
+sheet_refresh(sht_back, binfo->scrnx - 160, binfo->scrny - 20, 
+              binfo->scrnx - 45 + 5 * 8, binfo->scrny - 50 + 16);
+```
+
+#### 读取时间的API
+
+注册api 从30号开始编号 运行时触发软中断
+
+```assembly
+// a_nask.nas
+_api_getsecond:		; int api_getsecond(void);
+   		PUSH	EBX
+		MOV		EDX,30
+		INT		0x40
+		POP		EBX
+		RET
+
+_api_getminute:		; int api_getminute(void);
+		PUSH	EBX
+		MOV		EDX,31
+		INT		0x40
+		POP		EBX
+		RET
+
+_api_gethour:		; int api_gethour(void);
+		PUSH	EBX
+		MOV		EDX,32
+		INT		0x40
+		POP		EBX
+		RET
+
+_api_getyear:		; int api_getyear(void);
+		PUSH	EBX
+		MOV		EDX,33
+		INT		0x40
+		POP		EBX
+		RET
+
+_api_getmonth:		; int api_getmonth(void);
+		PUSH	EBX
+		MOV		EDX,34
+		INT		0x40
+		POP		EBX
+		RET
+
+_api_getday:		; int api_getday(void);
+		PUSH	EBX
+		MOV		EDX,35
+		INT		0x40
+		POP		EBX
+		RET
+```
+
+中断处理函数
+
+```C
+// console.c
+else if (edx == 30) {
+        reg[7] = get_sec_hex();
+    }
+    else if (edx == 31) {
+        reg[7] = get_min_hex();
+    }
+    else if (edx == 32) {
+        reg[7] = get_hour_hex();
+    }
+    else if (edx == 33) {
+        reg[7] = get_year();
+    }
+    else if (edx == 34) {
+        reg[7] = get_mon_hex();
+    }
+    else if (edx == 35) {
+        reg[7] = get_day_of_month();
+}
+```
+
+#### 画圆API 
+
+注册edx为40号的api
+
+```assembly
+_api_drawcircle:	; void api_drawcircle(int win, int x, int y, int r, int nouse, int col);
+		PUSH	EDI
+		PUSH	ESI
+		PUSH	EBP
+		PUSH	EBX
+		MOV		EDX,40
+		MOV		EBX,[ESP+20]	; win
+		MOV		EAX,[ESP+24]	; x
+		MOV		ECX,[ESP+28]	; y
+		MOV		ESI,[ESP+32]	; r
+		MOV		EDI,[ESP+36]	; nouse
+		MOV		EBP,[ESP+40]	; col
+		INT		0x40
+		POP		EBX
+		POP		EBP
+		POP		ESI
+		POP		EDI
+		RET
+```
+
+接受完参数后调用位于graphic.c的绘制图像函数
+
+```C
+// console.c
+else if (edx == 40) {
+        sht = (struct SHEET *) (ebx & 0xfffffffe);
+        int x = eax, y = ecx, r = esi;
+        int color = ebp;
+        drawcircle(sht->buf, x, y, r, color, sht->bxsize);
+        if ((ebx & 1) == 0) {
+            sheet_refresh(sht, x + r, y + r, x - r, y - r);
+        }
+}
+```
+
+使用计算机图形学中的bresenham算法绘制图像
+
+```C
+// graphic.c
+void drawFullCircle(int x0, int y0, int x, int y, int color, int xsize, char *vram) {
+    int circle_x = x0;
+    int circle_y = y0;
+    vram[(circle_y + y) * xsize + (circle_x + x)] = color;
+    vram[(circle_y + y) * xsize + (circle_x - x)] = color;
+    vram[(circle_y - y) * xsize + (circle_x + x)] = color;
+    vram[(circle_y - y) * xsize + (circle_x - x)] = color;
+    vram[(circle_y + x) * xsize + (circle_x + y)] = color;
+    vram[(circle_y + x) * xsize + (circle_x - y)] = color;
+    vram[(circle_y - x) * xsize + (circle_x + y)] = color;
+    vram[(circle_y - x) * xsize + (circle_x - y)] = color;
+}
+void drawcircle(char *vram, int x0, int y0, int r0, unsigned char c, int xsize) {
+    int x = 0;
+    int y = r0;
+    int d = 1 - y;
+    int color = c;
+    while (x < y) {
+        drawFullCircle(x0, y0, x, y, color, xsize, vram);
+        if (d < 0) {
+            d = d + 2 * x + 3;
+        }
+        else {
+            d = d + 2 * (x - y) + 5;
+            y = y - 1;
+        }
+        x = x + 1;
+    }
+}
+```
+
+效果：
+
+![image-20230609015254218](./image_md/image-20230609015254218.png)
+
+#### 模拟时钟
+
+结合以上工作
+
+制作模拟时钟
+
+使用画圆API绘制表盘 读取时间的API拿到时间 然后使用绘制直线的API绘制指针
+
+绘制文字的API绘制时刻
+
+```C
+#include <math.h>
+#include <stdio.h>
+int api_openwin(char *buf, int xsiz, int ysiz, int col_inv, char *title);
+void api_initmalloc(void);
+char *api_malloc(int size);
+void api_refreshwin(int win, int x0, int y0, int x1, int y1);
+void api_linewin(int win, int x0, int y0, int x1, int y1, int col);
+void api_closewin(int win);
+int api_getkey(int mode);
+void api_end(void);
+void api_putstrwin(int win, int x, int y, int col, int len, char *str);
+int api_getsecond(void);
+int api_getminute(void);
+int api_gethour(void);
+int ap_getyear(void);
+int api_getmonth(void);
+int api_getday(void);
+void api_drawcircle(int win, int x, int y, int r, int nouse, int col);
+int api_alloctimer(void);
+void api_inittimer(int timer, int data);
+void api_settimer(int timer, int time);
+void api_boxfilwin(int win, int x0, int y0, int x1, int y1, int col);
+
+double M_PI = 3.14;
+HariMain(void) {
+    char *buf;
+    int win, i;
+    api_initmalloc();
+    buf = api_malloc(160 * 180);
+    win = api_openwin(buf, 160, 180, -1, "CLOCK");
+    static int label_m[60][2] = {
+        // 内容太长 请直接阅读代码
+    };
+    static int label_h[12][2] = {
+        // 内容太长 请直接阅读代码
+    };
+    static int label_text[12][2] = {
+        // 内容太长 请直接阅读代码
+    };
+    int timer;
+    timer = api_alloctimer();
+    api_inittimer(timer, 128);
+    char *s;
+    int sec = 0, min = 0, hou = 0;
+
+    sec = api_getsecond();
+    min = api_getminute();
+    hou = api_gethour();
+    api_boxfilwin(win + 1, 80 - 65, 93 - 65, 80 + 65, 93 + 65, 8);
+    // 圆心是80,93，半径是65 表盘
+    api_drawcircle(win, 80, 93, 65, 0, 15);
+    api_linewin(win + 1, 80, 93, label_m[min][0], label_m[min][1], 0);
+    api_linewin(win + 1, 80, 93, label_h[hou % 12][0], label_h[hou % 12][1], 0);
+    api_linewin(win + 1, 80, 93, label_m[sec][0], label_m[sec][1], 1);
+    int dx = -5, dy = -6;
+    for (;;) {
+        // 清除原本
+        api_boxfilwin(win + 1, 80 - 65, 93 - 65, 80 + 65, 93 + 65, 8);
+        // 圆心是80,93，半径是65 表盘
+        api_drawcircle(win, 80, 93, 65, 0, 15);
+        int i;
+        for (i = 0; i < 12; i++) {
+            char s[2] = {0};
+            int j = (i + 12) % 12;
+            if (j == 0) j = 12;
+            sprintf(s, "%d", j);
+            api_putstrwin(win + 1, label_text[i][0] + dx, label_text[i][1] + dy, 0, 2, s);
+        }
+        api_linewin(win + 1, 80, 93, label_m[min][0], label_m[min][1], 0);
+        api_linewin(win + 1, 80, 93, label_h[hou % 12][0], label_h[hou % 12][1], 0);
+        api_linewin(win + 1, 80, 93, label_m[sec][0], label_m[sec][1], 1);
+
+        api_refreshwin(win, 0, 0, 160, 180);
+
+        api_settimer(timer, 100); /* 1秒 */
+        if (api_getkey(1) != 128) {
+            break;
+        }
+        sec = api_getsecond();
+        min = api_getminute();
+        hou = api_gethour();
+    }
+    api_closewin(win);
+    api_end();
+}
+
+```
+
+值得注意的是 程序中包含三个二维数组
+
+这三个数组分别记录着
+
+大刻度 12 0 1 2 3 4 5 6 7  8 9 10 11
+
+小刻度 0-60
+
+文字刻度 12 0 1 2 3 4 5 6 7  8 9 10 11
+
+这些刻度的在窗口中的坐标 因为直接使用math.h计算会出现未知错误 这里我使用python计算好全部的刻度值 放入
+
+三个数组中即可：
+
+```python
+# 用于计算钟表上各个刻度的坐标
+import math
+r = 55
+for i in range(0, 12):
+    # 60个刻度的坐标
+    x = 80 + r * math.sin(math.pi / 180 * i * 30)
+    y = 93 - r * math.cos(math.pi / 180 * i * 30)
+    # 输出为 {x,y}, 的形式
+    print("{%d,%d}," % (x, y))
+```
+
+最终实现模拟时钟
+
+![clock](./image_md/clock.gif)
+
+#### 开机动画
+
+这里顽皮一下 其实就是为了加入而加入
+
+修改了两部分
+
+在读取完所有柱面后 输出welcome中的文字 然后执行HLT的循环到0x8F后跳入到启动程序
+
+<img src="./image_md/image-20230609020412993.png" alt="image-20230609020412993" style="zoom:50%;" />
+
+在C语言入口文件 wait_a_while是汇编写的函数作用是执行50个HLT
+
+```C
+void HariMain(void) {
+    struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
+    bootcover(binfo, 0);
+    wait_a_while();
+    bootcover(binfo, 1);
+    wait_a_while();
+    bootcover(binfo, 2);
+    wait_a_while();
+    wait_a_while();
+    bootcover(binfo, 3);
+    wait_a_while();
+    wait_a_while();
+    wait_a_while();
+    bootcover(binfo, 4);
+    ....
+}
+```
+
+bootcover.c中简单的图形绘制
+
+```C
+#include "bootpack.h"
+void setColor(int x, int y, int color, int xsize, int ysize, char *vram) {
+    if (x < 0 || x >= xsize || y < 0 || y >= ysize) {
+        return;
+    }
+    char *p = vram + y * xsize + x;
+
+    *p = color;
+}
+void bootcover(struct BOOTINFO *binfo, int step) {
+    int xsize = binfo->scrnx, ysize = binfo->scrny;
+    int i, j;
+    int color = 15;
+    if (step == 0) {
+        for (i = 0; i < xsize; i++) {
+            for (j = 0; j < ysize; j++) {
+                setColor(i, j, color, xsize, ysize, binfo->vram);
+            }
+        }
+    }
+    // 绘制矩形
+    int width, height = 40;
+    int x = 0, y = binfo->scrny / 2 - height / 2;
+    if (step == 0) {
+        width = binfo->scrnx / 4 * 1;
+    }
+    else if (step == 1) {
+        width = binfo->scrnx / 4 * 2;
+    }
+    else if (step == 2) {
+        width = binfo->scrnx / 4 * 3;
+    }
+    else if (step == 3) {
+        width = binfo->scrnx - 1;
+    }
+    else {
+        color = 0;
+        for (i = 0; i < xsize; i++) {
+            for (j = 0; j < ysize; j++) {
+                setColor(i, j, color, xsize, ysize, binfo->vram);
+            }
+        }
+        return;
+    }
+    for (i = 0; i < width; i++) {
+        for (j = 0; j < height; j++) {
+            setColor(x + i, y + j, 1, xsize, ysize, binfo->vram);
+        }
+    }
+    return;
+}
+```
+
+效果
+
+![an](./image_md/an.gif)
+
+#### 关机 重启
+
+以下代码是从网上收集来的，不是很理解
+
+```assembly
+; [BITS32]
+_shutdown:
+JMP start2
+db 0x00, 0x00
+protect16:
+db 0xb8, 0x08, 0x00, 0x8e, 0xd8, 0x8e, 0xc0, 0x8e, 0xd0
+db 0x0f, 0x20, 0xc0, 0x66, 0x25, 0xfe,0xff,0xff, 0x7f
+db 0x0f, 0x22, 0xc0
+db 0xea
+dw 0x0650,0x0000
+ALIGNB 16
+protect16_len EQU $ - protect16
+;上面的代码为16位保护模式跳入实模式功能代码
+;保护模式代码传送到内存0x0630处，为它保留0x20 B
+
+realmod:
+db 0x8c, 0xc8
+db 0x8e, 0xd8
+db 0x8e, 0xc0
+db 0x8e, 0xd0
+db 0xbc, 0x00, 0x08
+db 0xe4, 0x92
+db 0x24, 0xfd
+db 0xe6, 0x92
+db 0x90, 0x90, 0x90
+db 0xfb, 0x90
+db 0xb8, 0x03, 0x00
+db 0xcd, 0x10
+;db 0xf4 ;关机
+db 0xb8, 0x07, 0x53
+db 0xbb, 0x01, 0x00
+db 0xb9, 0x03, 0x00
+db 0xcd, 0x15
+ALIGNB 16
+realmod_len EQU $ - realmod
+; 以上代码段为实模式下设置字符显示模式及关机代码
+; 实模式功能代码传送到0x0650处。
+
+GDTIDT:
+dw 0x0000, 0x0000, 0x0000, 0x0000
+dw 0xffff, 0x0000, 0x9200, 0x0000
+dw 0xffff, 0x0000, 0x9800, 0x0000
+dw 0x0000
+dw 0x0017
+dw 0x0600, 0x0000
+dw 0x03ff
+dw 0x0000, 0x0000
+ALIGNB 16
+GDTIDT_lenth EQU $ - GDTIDT
+;以上为GDT及ITD表项数据
+;以上数据传送到0x0600处，保留0x30 B的空间。
+
+start2:
+MOV EBX, GDTIDT
+MOV EDX, 0x600
+MOV CX, GDTIDT_lenth
+.loop1:
+MOV AL, [CS:EBX]
+MOV [EDX], AL
+INC EBX
+INC EDX
+loop .loop1
+
+MOV EBX, protect16
+MOV EDX, 0x630
+MOV CX, protect16_len
+.loop2:
+MOV AL, [CS:EBX]
+MOV [EDX], AL
+INC EBX
+INC EDX
+loop .loop2
+
+MOV EBX, realmod
+MOV EDX, 0x650
+MOV CX, realmod_len
+.loop3:
+MOV AL, [CS:EBX]
+MOV [EDX], AL
+INC EBX
+INC EDX
+loop .loop3
+
+LGDT [0x061A]
+LIDT [0x0620]
+JMP 2*8:0x0630
+
+_reboot:
+mov al,0feh
+out 64h,al
+```
+
+效果：![shutdown](./image_md/shutdown.gif)
+
+#### 使用Python编写制作鼠标指针的程序
+
+此功能为额外功能
+
+使用opencv处理图片 图片转为灰度图 然后根据设置的阈值转为二值图 然后转为字符串形式
+
+```python
+import cv2 as cv
+
+# 打开图片
+img = cv.imread("mouse.png")
+# 图片缩放16*16
+img = cv.resize(img, (16, 16))
+gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+ret, binary = cv.threshold(gray, 150, 255, cv.THRESH_BINARY)
+# 保存为16*16字符串 亮色用 . 表示，暗色用 O 表示
+for i in range(16):
+    print("\"", end="")
+    for j in range(16):
+        if binary[i, j] == 255:
+            print(".", end="")
+        else:
+            print("O", end="")
+    print("\",")
+    
+```
+
+传入图片：
+
+<img src="./image_md/image-20230609020939392.png" alt="image-20230609020939392" style="zoom:25%;" />
+
+得到效果：
+
+<img src="./image_md/image-20230609021005358.png" alt="image-20230609021005358" style="zoom:50%;" />
+
+运行效果：
+
+![image-20230609021030159](./image_md/image-20230609021030159.png)
+
+#### 调节鼠标速度的程序
+
+在鼠标移动时 给位移参数乘上缩放比例
+
+修改头文件中的MOUSE_DEC 加入scale
+
+```C
+struct MOUSE_DEC {
+    unsigned char buf[3], phase;
+    int x, y, btn;
+    int scale;
+};
+```
+
+主函数中乘系数 第五行的函数用于显示字体但是使用rgb背景色 详情看 主题更换 节
+
+```c
+mx += mdec.x * mdec.scale;
+my += mdec.y * mdec.scale;
+char *text;
+sprintf(text, "Press the middle key to increase mouse speed:%d", mdec.scale);
+putfonts8_asc_sht_rgbbk(sht_back, 0, 200, COL8_FFFFFF, text, 60, 51, 65, 85);
+```
+
+鼠标处理部分 按下中键修改速度
+
+```c
+// 按下中键
+if ((mdec.btn & 0x04) != 0) {
+    if (mdec.scale == 10) {
+        mdec.scale = 1;
+    }
+    else {
+        mdec.scale += 1;
+    }
+}
+```
+
+效果
+
+![mouse](./image_md/mouse.gif)
+
+#### 中文支持
+
+使用[点阵字符在线生成，点阵字代码生成器 (qqxiuzi.cn)](https://www.qqxiuzi.cn/zh/dianzhenzi-zifu/)
+
+生成点阵 修改格式后存入font_x数组中 使用putfont16绘制
+
+![image-20230608173442051](./image_md/image-20230608173442051.png)![image-20230609021615019](./image_md/image-20230609021615019.png)
+
+```C
+// graphic.c
+void putfont16(char *vram, int xsize, int x, int y, char c, char font[16][16]) {
+    // 传入font是16*16的数组
+    int i, j;
+    char *p, d /* data */;
+    for (i = 0; i < 16; i++) {
+        for (j = 0; j < 16; j++) {
+            p = vram + (y + i) * xsize + x + j;
+            d = font[i][j];
+            if (d == '1') {
+                p[0] = c;
+            }
+        }
+    }
+    return;
+}
+
+static char font_1[16][16] = {
+    "0000000000000000",
+    "0100001100000000",
+    "0110011001111110",
+    "0011010001111110",
+    "1111111101100110",
+    "1111111101100110",
+    "0001100001101100",
+    "0001100001101000",
+    "1111111101101100",
+    "1111111101100110",
+    "0001100001100110",
+    "0001110001100110",
+    "0011011001111110",
+    "0110001101101100",
+    "1100000101100000",
+    "1000000001100000",
+};
+```
+
+#### 主题更换
+
+创建使用RGB做色彩的相关函数
+
+```C
+unsigned char rgb2pal(int r, int g, int b, int x, int y) {
+    static int table[4] = {3, 1, 0, 2};
+    int i;
+    x &= 1; /*判断是偶数还是奇数*/
+    y &= 1;
+    i = table[x + y * 2]; /*用来生成中间色的常量*/
+    r = (r * 21) / 256;   /* r为0～20*/
+    g = (g * 21) / 256;
+    b = (b * 21) / 256;
+    r = (r + i) / 4; /* r为0～5*/
+    g = (g + i) / 4;
+    b = (b + i) / 4;
+    return 16 + r + g * 6 + b * 36;
+}
+
+
+void boxfillrgb(unsigned char *vram, int xsize, int x0, int y0, int x1, int y1, int r, int g, int b) {
+    int x, y;
+    for (y = y0; y <= y1; y++) {
+        for (x = x0; x <= x1; x++) { vram[y * xsize + x] = rgb2pal(r, g, b, x, y); }
+    }
+    return;
+}
+void putfonts8_asc_sht_rgbbk(struct SHEET *sht, int x, int y, int c, char *s, int l, int r, int g, int b) {
+    boxfillrgb(sht->buf, sht->bxsize, x, y, x + l * 8 - 1, y + 15, r, g, b);
+    putfonts8_asc(sht->buf, sht->bxsize, x, y, c, s);
+    sheet_refresh(sht, x, y, x + l * 8, y + 16);
+    return;
+}
+```
+
+效果，背景色为(51, 65, 85)
+
+![image-20230609021840077](./image_md/image-20230609021840077.png)
 
 ## 实验截图
 

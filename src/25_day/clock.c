@@ -24,13 +24,10 @@ void api_boxfilwin(int win, int x0, int y0, int x1, int y1, int col);
 double M_PI = 3.14;
 HariMain(void) {
     char *buf;
-
     int win, i;
     api_initmalloc();
     buf = api_malloc(160 * 180);
     win = api_openwin(buf, 160, 180, -1, "CLOCK");
-
-
     static int label_m[60][2] = {
             {80, 33},
             {86, 33},
@@ -118,8 +115,6 @@ HariMain(void) {
             {25, 93},
             {32, 65},
             {52, 45}};
-
-
     int timer;
     timer = api_alloctimer();
     api_inittimer(timer, 128);
