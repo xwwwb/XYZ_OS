@@ -22,6 +22,12 @@
 		GLOBAL	_api_settimer
 		GLOBAL	_api_freetimer
 		GLOBAL	_api_beep
+		GLOBAL  _api_gethour
+		GLOBAL  _api_getminute
+		GLOBAL  _api_getsecond
+		GLOBAL  _api_getyear
+		GLOBAL  _api_getmonth
+		GLOBAL  _api_getday
 
 [SECTION .text]
 
@@ -227,4 +233,46 @@ _api_beep:			; void api_beep(int tone);
 		MOV		EDX,20
 		MOV		EAX,[ESP+4]			; tone
 		INT		0x40
+		RET
+
+_api_getsecond:		; int api_getsecond(void);
+    PUSH	EBX
+		MOV		EDX,30
+		INT		0x40
+		POP		EBX
+		RET
+
+_api_getminute:		; int api_getminute(void);
+		PUSH	EBX
+		MOV		EDX,31
+		INT		0x40
+		POP		EBX
+		RET
+
+_api_gethour:		; int api_gethour(void);
+		PUSH	EBX
+		MOV		EDX,32
+		INT		0x40
+		POP		EBX
+		RET
+
+_api_getyear:		; int api_getyear(void);
+		PUSH	EBX
+		MOV		EDX,33
+		INT		0x40
+		POP		EBX
+		RET
+
+_api_getmonth:		; int api_getmonth(void);
+		PUSH	EBX
+		MOV		EDX,34
+		INT		0x40
+		POP		EBX
+		RET
+
+_api_getday:		; int api_getday(void);
+		PUSH	EBX
+		MOV		EDX,35
+		INT		0x40
+		POP		EBX
 		RET

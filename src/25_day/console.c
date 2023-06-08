@@ -464,6 +464,25 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
             io_out8(0x61, (i | 0x03) & 0x0f);
         }
     }
+    else if (edx == 30) {
+        reg[7] = get_sec_hex();
+    }
+    else if (edx == 31) {
+        reg[7] = get_min_hex();
+    }
+    else if (edx == 32) {
+        reg[7] = get_hour_hex();
+    }
+    else if (edx == 33) {
+        reg[7] = get_year();
+    }
+    else if (edx == 34) {
+        reg[7] = get_mon_hex();
+    }
+    else if (edx == 35) {
+        reg[7] = get_day_of_month();
+    }
+
     return 0;
 }
 

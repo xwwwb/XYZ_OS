@@ -1,6 +1,6 @@
 OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj \
 		int.obj fifo.obj keyboard.obj mouse.obj memory.obj sheet.obj timer.obj \
-		mtask.obj window.obj console.obj file.obj cmos.obj
+		mtask.obj window.obj console.obj file.obj cmos.obj 
 
 TOOLPATH = ../z_tools/
 INCPATH  = ../z_tools/haribote/
@@ -164,10 +164,19 @@ color2.bim : color2.obj a_nask.obj Makefile
 color2.hrb : color2.bim Makefile
 	$(BIM2HRB) color2.bim color2.hrb 56k
 
+clock.bim : clock.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:clock.bim stack:1k map:clock.map \
+		clock.obj a_nask.obj
+
+clock.hrb : clock.bim Makefile
+	$(BIM2HRB) clock.bim clock.hrb 56k
+	
+
+
 haribote.img : ipl10.bin haribote.sys Makefile \
 		hello.hrb hello2.hrb a.hrb hello3.hrb hello4.hrb hello5.hrb \
 		winhelo.hrb winhelo2.hrb winhelo3.hrb star1.hrb stars.hrb stars2.hrb \
-		lines.hrb walk.hrb noodle.hrb beepdown.hrb color.hrb color2.hrb
+		lines.hrb walk.hrb noodle.hrb beepdown.hrb color.hrb color2.hrb clock.hrb
 	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
 		wbinimg src:ipl10.bin len:512 from:0 to:0 \
 		copy from:haribote.sys to:@: \
@@ -191,6 +200,7 @@ haribote.img : ipl10.bin haribote.sys Makefile \
 		copy from:beepdown.hrb to:@: \
 		copy from:color.hrb to:@: \
 		copy from:color2.hrb to:@: \
+		copy from:clock.hrb to:@: \
 		imgout:haribote.img
 
 # 其他指令
