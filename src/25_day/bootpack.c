@@ -119,6 +119,14 @@ void HariMain(void) {
     fifo32_put(&keycmd, KEYCMD_LED);
     fifo32_put(&keycmd, key_leds);
 
+    // 显示中文字体
+    char *font;
+    for (i = 1; i < 8; i++) {
+        font = getzhfont(i);
+        putfont16(buf_back, binfo->scrnx, 8 + i * 16, 8, COL8_FFFFFF, font);
+    }
+    sheet_refresh(sht_back, 0, 0, binfo->scrnx, 32);
+
     for (;;) {
         if (fifo32_status(&keycmd) > 0 && keycmd_wait < 0) {
             /* 如果存在向键盘控制器发送的数据，则发送它 */
