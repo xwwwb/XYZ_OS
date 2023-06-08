@@ -482,6 +482,15 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
     else if (edx == 35) {
         reg[7] = get_day_of_month();
     }
+    else if (edx == 40) {
+        sht = (struct SHEET *) (ebx & 0xfffffffe);
+        int x = eax, y = ecx, r = esi;
+        int color = ebp;
+        drawcircle(sht->buf, x, y, r, color, sht->bxsize);
+        if ((ebx & 1) == 0) {
+            sheet_refresh(sht, x + r, y + r, x - r, y - r);
+        }
+    }
 
     return 0;
 }

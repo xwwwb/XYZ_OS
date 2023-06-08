@@ -59,6 +59,7 @@ void putblock8_8(char *vram, int vxsize, int pxsize,
                  int pysize, int px0, int py0, char *buf, int bxsize);
 void putfont16(char *vram, int xsize, int x, int y, char c, char font[16][16]);
 char *getzhfont(int c);
+void drawcircle(char *vram, int x0, int y0, int r0, unsigned char c, int xsize);
 #define COL8_000000 0
 #define COL8_FF0000 1
 #define COL8_00FF00 2

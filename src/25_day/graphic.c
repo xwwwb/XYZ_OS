@@ -61,6 +61,37 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
     return;
 }
 
+void drawFullCircle(int x0, int y0, int x, int y, int color, int xsize, char *vram) {
+    int circle_x = x0;
+    int circle_y = y0;
+    vram[(circle_y + y) * xsize + (circle_x + x)] = color;
+    vram[(circle_y + y) * xsize + (circle_x - x)] = color;
+    vram[(circle_y - y) * xsize + (circle_x + x)] = color;
+    vram[(circle_y - y) * xsize + (circle_x - x)] = color;
+    vram[(circle_y + x) * xsize + (circle_x + y)] = color;
+    vram[(circle_y + x) * xsize + (circle_x - y)] = color;
+    vram[(circle_y - x) * xsize + (circle_x + y)] = color;
+    vram[(circle_y - x) * xsize + (circle_x - y)] = color;
+}
+void drawcircle(char *vram, int x0, int y0, int r0, unsigned char c, int xsize) {
+    int x = 0;
+    int y = r0;
+    int d = 1 - y;
+    int color = c;
+    while (x < y) {
+        drawFullCircle(x0, y0, x, y, color, xsize, vram);
+        if (d < 0) {
+            d = d + 2 * x + 3;
+        }
+        else {
+            d = d + 2 * (x - y) + 5;
+            y = y - 1;
+        }
+        x = x + 1;
+    }
+}
+
+
 void init_screen8(char *vram, int x, int y) {
     boxfill8(vram, x, COL8_008484, 0, 0, x - 1, y - 29);
     boxfill8(vram, x, COL8_C6C6C6, 0, y - 28, x - 1, y - 28);

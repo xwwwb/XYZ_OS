@@ -169,7 +169,7 @@ clock.bim : clock.obj a_nask.obj Makefile
 		clock.obj a_nask.obj
 
 clock.hrb : clock.bim Makefile
-	$(BIM2HRB) clock.bim clock.hrb 56k
+	$(BIM2HRB) clock.bim clock.hrb 100k
 	
 
 

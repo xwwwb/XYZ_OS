@@ -28,6 +28,7 @@
 		GLOBAL  _api_getyear
 		GLOBAL  _api_getmonth
 		GLOBAL  _api_getday
+		GLOBAL  _api_drawcircle
 
 [SECTION .text]
 
@@ -275,4 +276,23 @@ _api_getday:		; int api_getday(void);
 		MOV		EDX,35
 		INT		0x40
 		POP		EBX
+		RET
+
+_api_drawcircle:	; void api_drawcircle(int win, int x, int y, int r, int nouse, int col);
+		PUSH	EDI
+		PUSH	ESI
+		PUSH	EBP
+		PUSH	EBX
+		MOV		EDX,40
+		MOV		EBX,[ESP+20]	; win
+		MOV		EAX,[ESP+24]	; x
+		MOV		ECX,[ESP+28]	; y
+		MOV		ESI,[ESP+32]	; r
+		MOV		EDI,[ESP+36]	; nouse
+		MOV		EBP,[ESP+40]	; col
+		INT		0x40
+		POP		EBX
+		POP		EBP
+		POP		ESI
+		POP		EDI
 		RET
