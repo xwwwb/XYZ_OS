@@ -179,6 +179,12 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal) {
     else if (strncmp(cmdline, "type ", 5) == 0) {
         cmd_type(cons, fat, cmdline);
     }
+    else if (strcmp(cmdline, "shutdown") == 0) {
+        shutdown();
+    }
+    else if (strcmp(cmdline, "reboot") == 0) {
+        reboot();
+    }
     else if (cmdline[0] != 0) {
         if (cmd_app(cons, fat, cmdline) == 0) {
             /*不是命令，不是应用程序，也不是空行*/

@@ -18,7 +18,7 @@
 		GLOBAL	_asm_inthandler0d, _asm_end_app
 		GLOBAL	_memtest_sub
 		GLOBAL	_farjmp, _farcall
-		GLOBAL	_asm_hrb_api, _start_app
+		GLOBAL	_asm_hrb_api, _start_app ,_shutdown,_reboot
 		EXTERN	_inthandler20, _inthandler21
 		EXTERN	_inthandler2c, _inthandler0d
 		EXTERN	_inthandler0c
@@ -289,3 +289,96 @@ _start_app:		; void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 		PUSH		EAX						; 应用程序的EIP
 		RETF
 ; 应用程序结束后不会回到这里
+
+
+; [BITS32]
+_shutdown:
+JMP start2
+db 0x00, 0x00
+protect16:
+db 0xb8, 0x08, 0x00, 0x8e, 0xd8, 0x8e, 0xc0, 0x8e, 0xd0
+db 0x0f, 0x20, 0xc0, 0x66, 0x25, 0xfe,0xff,0xff, 0x7f
+db 0x0f, 0x22, 0xc0
+db 0xea
+dw 0x0650,0x0000
+ALIGNB 16
+protect16_len EQU $ - protect16
+;上面的代码为16位保护模式跳入实模式功能代码
+;保护模式代码传送到内存0x0630处，为它保留0x20 B
+
+realmod:
+db 0x8c, 0xc8
+db 0x8e, 0xd8
+db 0x8e, 0xc0
+db 0x8e, 0xd0
+db 0xbc, 0x00, 0x08
+db 0xe4, 0x92
+db 0x24, 0xfd
+db 0xe6, 0x92
+db 0x90, 0x90, 0x90
+db 0xfb, 0x90
+db 0xb8, 0x03, 0x00
+db 0xcd, 0x10
+;db 0xf4 ;关机
+db 0xb8, 0x07, 0x53
+db 0xbb, 0x01, 0x00
+db 0xb9, 0x03, 0x00
+db 0xcd, 0x15
+ALIGNB 16
+realmod_len EQU $ - realmod
+; 以上代码段为实模式下设置字符显示模式及关机代码
+; 实模式功能代码传送到0x0650处。
+
+GDTIDT:
+dw 0x0000, 0x0000, 0x0000, 0x0000
+dw 0xffff, 0x0000, 0x9200, 0x0000
+dw 0xffff, 0x0000, 0x9800, 0x0000
+dw 0x0000
+dw 0x0017
+dw 0x0600, 0x0000
+dw 0x03ff
+dw 0x0000, 0x0000
+ALIGNB 16
+GDTIDT_lenth EQU $ - GDTIDT
+;以上为GDT及ITD表项数据
+;以上数据传送到0x0600处，保留0x30 B的空间。
+
+start2:
+MOV EBX, GDTIDT
+MOV EDX, 0x600
+MOV CX, GDTIDT_lenth
+.loop1:
+MOV AL, [CS:EBX]
+MOV [EDX], AL
+INC EBX
+INC EDX
+loop .loop1
+
+MOV EBX, protect16
+MOV EDX, 0x630
+MOV CX, protect16_len
+.loop2:
+MOV AL, [CS:EBX]
+MOV [EDX], AL
+INC EBX
+INC EDX
+loop .loop2
+
+MOV EBX, realmod
+MOV EDX, 0x650
+MOV CX, realmod_len
+.loop3:
+MOV AL, [CS:EBX]
+MOV [EDX], AL
+INC EBX
+INC EDX
+loop .loop3
+
+LGDT [0x061A]
+LIDT [0x0620]
+JMP 2*8:0x0630
+
+_reboot:
+mov al,0feh
+out 64h,al
+

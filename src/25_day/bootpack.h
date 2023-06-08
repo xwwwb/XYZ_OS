@@ -306,3 +306,7 @@ unsigned int get_day_of_month();
 unsigned int get_day_of_week();
 unsigned int get_mon_hex();
 unsigned int get_year();
+
+
+void shutdown(void);
+void reboot(void);
