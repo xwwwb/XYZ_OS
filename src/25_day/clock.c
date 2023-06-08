@@ -133,8 +133,8 @@ HariMain(void) {
     // 圆心是80,93，半径是65 表盘
     api_drawcircle(win, 80, 93, 65, 0, 15);
     api_linewin(win + 1, 80, 93, label_m[min][0], label_m[min][1], 0);
-    api_linewin(win + 1, 80, 93, label_h[hou % 12][0], label_h[hou % 12][1], 1);
-    api_linewin(win + 1, 80, 93, label_m[sec][0], label_m[sec][1], 3);
+    api_linewin(win + 1, 80, 93, label_h[hou % 12][0], label_h[hou % 12][1], 0);
+    api_linewin(win + 1, 80, 93, label_m[sec][0], label_m[sec][1], 1);
     int dx = -5, dy = -6;
     for (;;) {
         // 清除原本
@@ -150,8 +150,8 @@ HariMain(void) {
             api_putstrwin(win + 1, label_text[i][0] + dx, label_text[i][1] + dy, 0, 2, s);
         }
         api_linewin(win + 1, 80, 93, label_m[min][0], label_m[min][1], 0);
-        api_linewin(win + 1, 80, 93, label_h[hou % 12][0], label_h[hou % 12][1], 1);
-        api_linewin(win + 1, 80, 93, label_m[sec][0], label_m[sec][1], 3);
+        api_linewin(win + 1, 80, 93, label_h[hou % 12][0], label_h[hou % 12][1], 0);
+        api_linewin(win + 1, 80, 93, label_m[sec][0], label_m[sec][1], 1);
 
         api_refreshwin(win, 0, 0, 160, 180);
 
