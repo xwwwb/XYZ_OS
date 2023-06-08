@@ -1,5 +1,6 @@
-import math
+# 用于计算钟表上各个刻度的坐标
 
+import math
 r = 55
 for i in range(0, 12):
     # 60个刻度的坐标
