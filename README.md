@@ -183,7 +183,7 @@ cd ./src/25_day
 
 #### 右下角时钟
 
-![动画](./image_md/%E5%8A%A8%E7%94%BB-1686246000192-2.gif)
+![动画](https://osimg.xwwwb.com/image_md/%E5%8A%A8%E7%94%BB-1686246000192-2.gif)
 
 经过查阅资料可得到获取 CMOS 信息的常量
 
@@ -417,7 +417,7 @@ void drawcircle(char *vram, int x0, int y0, int r0, unsigned char c, int xsize) 
 
 效果：
 
-![image-20230609015254218](./image_md/image-20230609015254218.png)
+![image-20230609015254218](https://osimg.xwwwb.com/image_md/image-20230609015254218.png)
 
 #### 模拟时钟
 
@@ -546,7 +546,7 @@ for i in range(0, 12):
 
 最终实现模拟时钟
 
-![clock](./image_md/clock.gif)
+![clock](https://osimg.xwwwb.com/image_md/clock.gif)
 
 #### 开机动画
 
@@ -556,7 +556,7 @@ for i in range(0, 12):
 
 在读取完所有柱面后 输出 welcome 中的文字 然后执行 HLT 的循环到 0x8F 后跳入到启动程序
 
-<img src="./image_md/image-20230609020412993.png" alt="image-20230609020412993" style="zoom:50%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230609020412993.png" alt="image-20230609020412993" style="zoom:50%;" />
 
 在 C 语言入口文件 wait_a_while 是汇编写的函数作用是执行 50 个 HLT
 
@@ -637,7 +637,7 @@ void bootcover(struct BOOTINFO *binfo, int step) {
 
 效果
 
-![an](./image_md/an.gif)
+![an](https://osimg.xwwwb.com/image_md/an.gif)
 
 #### 关机 重启
 
@@ -736,7 +736,7 @@ mov al,0feh
 out 64h,al
 ```
 
-效果：![shutdown](./image_md/shutdown.gif)
+效果：![shutdown](https://osimg.xwwwb.com/image_md/shutdown.gif)
 
 #### 使用 Python 编写制作鼠标指针的程序
 
@@ -767,15 +767,15 @@ for i in range(16):
 
 传入图片：
 
-<img src="./image_md/image-20230609020939392.png" alt="image-20230609020939392" style="zoom:25%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230609020939392.png" alt="image-20230609020939392" style="zoom:25%;" />
 
 得到效果：
 
-<img src="./image_md/image-20230609021005358.png" alt="image-20230609021005358" style="zoom:50%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230609021005358.png" alt="image-20230609021005358" style="zoom:50%;" />
 
 运行效果：
 
-![image-20230609021030159](./image_md/image-20230609021030159.png)
+![image-20230609021030159](https://osimg.xwwwb.com/image_md/image-20230609021030159.png)
 
 #### 调节鼠标速度的程序
 
@@ -817,7 +817,7 @@ if ((mdec.btn & 0x04) != 0) {
 
 效果
 
-![mouse](./image_md/mouse.gif)
+![mouse](https://osimg.xwwwb.com/image_md/mouse.gif)
 
 #### 中文支持
 
@@ -825,7 +825,7 @@ if ((mdec.btn & 0x04) != 0) {
 
 生成点阵 修改格式后存入 font_x 数组中 使用 putfont16 绘制
 
-![image-20230608173442051](./image_md/image-20230608173442051.png)![image-20230609021615019](./image_md/image-20230609021615019.png)
+![image-20230608173442051](https://osimg.xwwwb.com/image_md/image-20230608173442051.png)![image-20230609021615019](https://osimg.xwwwb.com/image_md/image-20230609021615019.png)
 
 ```C
 // graphic.c
@@ -903,31 +903,31 @@ void putfonts8_asc_sht_rgbbk(struct SHEET *sht, int x, int y, int c, char *s, in
 
 效果，背景色为(51, 65, 85)
 
-![image-20230609021840077](./image_md/image-20230609021840077.png)
+![image-20230609021840077](https://osimg.xwwwb.com/image_md/image-20230609021840077.png)
 
 ## 实验详情
 
 ### 第一天
 
-<img src="./image_md/image-20230529210641118.png" alt="image-20230529210641118" style="zoom:50%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230529210641118.png" alt="image-20230529210641118" style="zoom:50%;" />
 
 ### 第二天
 
 和第一天的运行结果一致：
 
-<img src="./image_md/image-20230529210847550.png" alt="image-20230529210847550" style="zoom:80%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230529210847550.png" alt="image-20230529210847550" style="zoom:80%;" />
 
 附上 VMware 的运行结果和裸机运行结果
 
-<img src="./image_md/image-20230529211029376.png" alt="image-20230529211029376" style="zoom:80%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230529211029376.png" alt="image-20230529211029376" style="zoom:80%;" />
 
-<img src="./image_md/image-20230529211606790.png" alt="image-20230529211606790" style="zoom:80%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230529211606790.png" alt="image-20230529211606790" style="zoom:80%;" />
 
 ### 第三天
 
 可以显示一个黑色的画面
 
- <img src="./image_md/image-20230529211242634.png" alt="image-20230529211242634" style="zoom:80%;" />
+ <img src="https://osimg.xwwwb.com/image_md/image-20230529211242634.png" alt="image-20230529211242634" style="zoom:80%;" />
 
 ### 第四天
 
@@ -939,9 +939,9 @@ C 语言汇编混合编程 汇编实现了几个函数
 
 一个是书本的运行结果
 
-<img src="./image_md/image-20230529211428060.png" alt="image-20230529211428060" style="zoom:80%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230529211428060.png" alt="image-20230529211428060" style="zoom:80%;" />
 
-<img src="./image_md/image-20230529211749295.png" alt="image-20230529211749295" style="zoom:80%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230529211749295.png" alt="image-20230529211749295" style="zoom:80%;" />
 
 ### 第五天
 
@@ -980,7 +980,7 @@ void putfont8(char *vram, int xsize, int x, int y, char c, char *font)
 
 以上 font_A 存储了 A 字符的点阵信息
 
-<img src="./image_md/image-20230601113822518.png" alt="image-20230601113822518" style="zoom:25%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230601113822518.png" alt="image-20230601113822518" style="zoom:25%;" />
 
 ```
 // 对以上代码进行分析
@@ -1015,7 +1015,7 @@ static char font_A[16] = {
 };
 ```
 
-![image-20230601114415509](./image_md/image-20230601114415509.png)
+![image-20230601114415509](https://osimg.xwwwb.com/image_md/image-20230601114415509.png)
 
 在第五天我们还研究出如何更改入口函数
 
@@ -1025,9 +1025,9 @@ static char font_A[16] = {
 
 为了防止报错 还要 EXTERN 这个标识符 也要把 HariMain 暴漏出去
 
-<img src="./image_md/image-20230601115109731.png" alt="image-20230601115109731" style="zoom:50%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230601115109731.png" alt="image-20230601115109731" style="zoom:50%;" />
 
-<img src="./image_md/image-20230601115005589.png" alt="image-20230601115005589" style="zoom:60%;" />
+<img src="https://osimg.xwwwb.com/image_md/image-20230601115005589.png" alt="image-20230601115005589" style="zoom:60%;" />
 
 ### 第六天
 
@@ -1045,7 +1045,7 @@ static char font_A[16] = {
 
 具体原理有些难 还在研读中
 
-![image-20230601120007632](./image_md/image-20230601120007632.png)
+![image-20230601120007632](https://osimg.xwwwb.com/image_md/image-20230601120007632.png)
 
 ### 第七天
 
