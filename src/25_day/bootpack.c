@@ -19,8 +19,9 @@ void HariMain(void) {
     wait_a_while();
     bootcover(binfo, 3);
     wait_a_while();
+    wait_a_while();
+    wait_a_while();
     bootcover(binfo, 4);
-    // wait_a_while();
     struct SHTCTL *shtctl;
     char s[40];
     struct FIFO32 fifo, keycmd;
@@ -244,8 +245,14 @@ void HariMain(void) {
             else if (512 <= i && i <= 767) { /* 鼠标数据*/
                 if (mouse_decode(&mdec, i - 512) != 0) {
                     /* 已经收集了3字节的数据，移动光标 */
-                    mx += mdec.x;
-                    my += mdec.y;
+
+                    mx += mdec.x * mdec.scale;
+                    my += mdec.y * mdec.scale;
+                    char *text;
+                    sprintf(text, "Press the right button to increase mouse speed:%d", mdec.scale);
+
+                    putfonts8_asc_sht_rgbbk(sht_back, 0, 200, COL8_FFFFFF, text, 60, 51, 65, 85);
+
                     if (mx < 0) {
                         mx = 0;
                     }
@@ -307,6 +314,15 @@ void HariMain(void) {
                     else {
                         /*没有按下左键*/
                         mmx = -1; /*返回通常模式*/
+                    }
+                    // 按下右键
+                    if ((mdec.btn & 0x02) != 0) {
+                        if (mdec.scale == 10) {
+                            mdec.scale = 1;
+                        }
+                        else {
+                            mdec.scale += 1;
+                        }
                     }
                 }
             }

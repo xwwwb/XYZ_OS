@@ -30,6 +30,7 @@ void enable_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DEC *mdec) {
     io_out8(PORT_KEYDAT, MOUSECMD_ENABLE);
     /* 顺利的话，ACK(0xfa)会被发送*/
     mdec->phase = 0; /* 等待鼠标的0xfa的阶段*/
+    mdec->scale = 1;
     return;
 }
 

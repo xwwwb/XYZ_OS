@@ -129,6 +129,7 @@ void init_keyboard(struct FIFO32 *fifo, int data0);
 struct MOUSE_DEC {
     unsigned char buf[3], phase;
     int x, y, btn;
+    int scale;
 };
 void inthandler2c(int *esp);
 void enable_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DEC *mdec);
@@ -242,6 +243,8 @@ void putfonts8_asc_sht(struct SHEET *sht, int x, int y, int c, int b, char *s, i
 void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c);
 void make_wtitle8(unsigned char *buf, int xsize, char *title, char act);
 void change_wtitle8(struct SHEET *sht, char act);
+// 无背景文字
+void putfonts8_asc_sht_rgbbk(struct SHEET *sht, int x, int y, int c, char *s, int l, int r, int g, int b);
 
 /* console.c */
 struct CONSOLE {

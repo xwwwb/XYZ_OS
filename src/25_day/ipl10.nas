@@ -115,7 +115,7 @@ welcome:
 		DB		0x0a
 		DB    "System is starting..."
 		DB		0x0a
-		DB    "Please wait a moment."
+		DB    "Please wait a moment..."
 		DB		0x0a			; 换行
 		DB		0
 
