@@ -189,7 +189,7 @@ cd ./src/25_day
 
 编写如下代码拿到时间
 
-```C
+```clike
 // cmos.c
 #include "bootpack.h"
 
@@ -223,7 +223,7 @@ unsigned int get_year() {
 }
 ```
 
-```C
+```clike
 /**CMOS操作端口**/
 #define cmos_index 0x70
 #define cmos_data 0x71
@@ -257,7 +257,7 @@ unsigned int get_year();
 
 此代码运行在定时器中 刷新时间
 
-```C
+```clike
 // bootpack.c
 sprintf(s, "%d-%02d-%02d %02d:%02d:%02d", get_year(), get_mon_hex(), get_day_of_month(), get_hour_hex(), get_min_hex(), get_sec_hex());
 
@@ -318,7 +318,7 @@ _api_getday:		; int api_getday(void);
 
 中断处理函数
 
-```C
+```clike
 // console.c
 else if (edx == 30) {
         reg[7] = get_sec_hex();
@@ -367,7 +367,7 @@ _api_drawcircle:	; void api_drawcircle(int win, int x, int y, int r, int nouse, 
 
 接受完参数后调用位于 graphic.c 的绘制图像函数
 
-```C
+```clike
 // console.c
 else if (edx == 40) {
         sht = (struct SHEET *) (ebx & 0xfffffffe);
@@ -382,7 +382,7 @@ else if (edx == 40) {
 
 使用计算机图形学中的 bresenham 算法绘制图像
 
-```C
+```clike
 // graphic.c
 void drawFullCircle(int x0, int y0, int x, int y, int color, int xsize, char *vram) {
     int circle_x = x0;
@@ -429,7 +429,7 @@ void drawcircle(char *vram, int x0, int y0, int r0, unsigned char c, int xsize) 
 
 绘制文字的 API 绘制时刻
 
-```C
+```clike
 #include <math.h>
 #include <stdio.h>
 int api_openwin(char *buf, int xsiz, int ysiz, int col_inv, char *title);
@@ -560,7 +560,7 @@ for i in range(0, 12):
 
 在 C 语言入口文件 wait_a_while 是汇编写的函数作用是执行 50 个 HLT
 
-```C
+```clike
 void HariMain(void) {
     struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
     bootcover(binfo, 0);
@@ -581,7 +581,7 @@ void HariMain(void) {
 
 bootcover.c 中简单的图形绘制
 
-```C
+```clike
 #include "bootpack.h"
 void setColor(int x, int y, int color, int xsize, int ysize, char *vram) {
     if (x < 0 || x >= xsize || y < 0 || y >= ysize) {
@@ -783,7 +783,7 @@ for i in range(16):
 
 修改头文件中的 MOUSE_DEC 加入 scale
 
-```C
+```clike
 struct MOUSE_DEC {
     unsigned char buf[3], phase;
     int x, y, btn;
@@ -793,7 +793,7 @@ struct MOUSE_DEC {
 
 主函数中乘系数 第五行的函数用于显示字体但是使用 rgb 背景色 详情看 主题更换 节
 
-```c
+```clike
 mx += mdec.x * mdec.scale;
 my += mdec.y * mdec.scale;
 char *text;
@@ -803,7 +803,7 @@ putfonts8_asc_sht_rgbbk(sht_back, 0, 200, COL8_FFFFFF, text, 60, 51, 65, 85);
 
 鼠标处理部分 按下中键修改速度
 
-```c
+```clike
 // 按下中键
 if ((mdec.btn & 0x04) != 0) {
     if (mdec.scale == 10) {
@@ -827,7 +827,7 @@ if ((mdec.btn & 0x04) != 0) {
 
 ![image-20230608173442051](https://osimg.xwwwb.com/image_md/image-20230608173442051.png)![image-20230609021615019](https://osimg.xwwwb.com/image_md/image-20230609021615019.png)
 
-```C
+```clike
 // graphic.c
 void putfont16(char *vram, int xsize, int x, int y, char c, char font[16][16]) {
     // 传入font是16*16的数组
@@ -869,7 +869,7 @@ static char font_1[16][16] = {
 
 创建使用 RGB 做色彩的相关函数
 
-```C
+```clike
 unsigned char rgb2pal(int r, int g, int b, int x, int y) {
     static int table[4] = {3, 1, 0, 2};
     int i;
@@ -949,7 +949,7 @@ C 语言汇编混合编程 汇编实现了几个函数
 
 然后使用了字符点阵的形式表示单个字符，这里对以下输出算法做个简单的例子
 
-```C
+```clike
 int main(){
     static char font_A[16] = {
 		0x00, 0x18, 0x18, 0x18, 0x18, 0x24, 0x24, 0x24,
@@ -1008,7 +1008,7 @@ void putfont8(char *vram, int xsize, int x, int y, char c, char *font)
 
 新的 font_A
 
-```c
+```clike
 static char font_A[16] = {
 	0x00, 0x18, 0x18, 0x18, 0x18, 0x24, 0x24, 0x24,
 	0x24, 0x7e, 0x42, 0x42, 0x42, 0xff, 0x00, 0x00
@@ -1051,7 +1051,7 @@ static char font_A[16] = {
 
 书本 126 页有写 0x60+IRQ 号输出给 OCW2 重启键盘的中断检测
 
-```C
+```clike
 void inthandler21(int *esp)
 {
 	unsigned char data;
@@ -1123,7 +1123,7 @@ FAT 表存放在 0x000200 处 存放的是文件下一块的位置的信息
 
 FAT12 文件系统 文件名都是大写
 
-```C
+```clike
 else if (strcmp(cmdline, "hlt") == 0)
 {
   /*启动应用程序hlt.hrb */
