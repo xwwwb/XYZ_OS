@@ -75,6 +75,8 @@ cd ./src/25_day
 
 - [x] 书本 P100 鼠标背景显示函数的实际意义？
 
+  > 最开始我以为这个函数可以解决覆盖原背景色的问题，实际上不是的，这个函数就是绘制一个16*16的色块，解决背景色覆盖问题在day10叠加处理处解决
+
 - [x] 书本 P113 LGDT 的计算没看懂
 
   > ESP 寄存器 第四位开始存储 0000ffff 第六位存储 00270000 从第 4 位开始计算
@@ -907,13 +909,27 @@ void putfonts8_asc_sht_rgbbk(struct SHEET *sht, int x, int y, int c, char *s, in
 
 ## 实验详情
 
+运行原理：每一天的运行原理都相似，都是通过make指令运行z_tools/qemu文件夹，此文件夹下有Makefile，其中包含了一个批处理命令可以启动qemu.exe，这个批处理中包含了qemu的启动参数等。
+
 ### 第一天
+
+第一天最开始使用二进制编辑器直接制作磁盘镜像文件。后来改为使用作者自己开发的汇编工具nask制作磁盘镜像，但是使用的汇编指令多为DB和RESB为主，暂时还无法直接读懂。
+
+第一天的最后一部分使用汇编指令编写程序，至此为止可以读懂一部分。
+
+值得注意的是最后的RESB 0x1fe-$是为了补满510个字节。而启动扇区总共512字节，为什么补510字节，因为启动扇区要求最后两个字节是55 AA 所以留了两个字节。
+
+因为只有部分指令是可读懂的汇编，是字符输出部分，修改这部分之后即可得到下图结果，0x0a在ascii码中是换行符的意思，在C语言中的表示就是熟悉的\n，所以这里多添加了几个换行符，并将字符修改为hello,XYZ!!!
 
 <img src="https://osimg.xwwwb.com/image_md/image-20230529210641118.png" alt="image-20230529210641118" style="zoom:50%;" />
 
 ### 第二天
 
-和第一天的运行结果一致：
+第二天引入了Makefile，用于工程化管理项目，汇编文件也全部使用可读懂的形式编写，这其中用到了INT 0x10中断，查阅资料可知这是调用显卡BIOS的指令，AH和BX中存入了参数，AL存入字符，当前模式是打字机模式。
+
+整个汇编的大意为循环msg标识符的内容，如果值不为0(msg的末尾是0)则依次将字符压入AL中，然后调用显卡中断输出AL，以此实现将msg标识符的内容依次输出到屏幕。由于用的都是x86指令，所以可以运行在vmware虚拟机和裸机。
+
+后来又引入了磁盘制作工具，将启动分区的数据和其他的数据隔开，启动分区单独形成ipl.nas文件。
 
 <img src="https://osimg.xwwwb.com/image_md/image-20230529210847550.png" alt="image-20230529210847550" style="zoom:80%;" />
 
@@ -925,19 +941,89 @@ void putfonts8_asc_sht_rgbbk(struct SHEET *sht, int x, int y, int c, char *s, in
 
 ### 第三天
 
-可以显示一个黑色的画面
+第三天在原有的启动分区基础上，加入了读磁盘的指令，使用INT 0x13中断，将磁盘内容读入到内存中。
 
- <img src="https://osimg.xwwwb.com/image_md/image-20230529211242634.png" alt="image-20230529211242634" style="zoom:80%;" />
+使用循环的方式，依次修改INT 0x13的参数。
+
+按顺序读入18个扇区\*正反两磁头\*10个柱头 = 360个扇区 一个扇区512字节 总计180KB的内容
+
+至此为启动分区编写完毕。
+
+开始编写操作系统的文件，建立一个汇编文件，写入HLT简单的指令后将汇编文件编译为.sys文件，将sys文件放入磁盘镜像中，使用二进制编辑器找到这个文件在磁盘镜像中真正的位置发现文件内容位于0x004200之后，为什么是这个位置，读到后面才知道这是FAT12文件系统的特征。
+
+位于磁盘0x4200的内容，磁盘第二个扇区被装载到0x8200处。即可假想为第一个扇区在0x8000处(实际上应该在0x7200处)。
+
+但是可以认为磁盘在内存上是从0x8000开始的，0x8000+0x4200等于0xc200号地址，即sys文件的开始在0xc200
+
+修改启动分区的最后，加上JMP 0xc200，这样即可实现从启动分区跳转到sys文件，而sys文件由汇编编译来，所以该汇编文件即可视作操作系统，可以从这里开始操作系统开发。
+
+在汇编文件中写入显卡中断，参数调整为320x200x8位彩色。运行后发现屏幕呈黑色，即可说明显卡成功驱动。以上部分工作全部成功。
+
+接着在汇编文件中，将一些系统信息保存到指定内存处。
+
+接着在汇编文件中引入一系列暂时看不懂的指令，使系统进入32位。
+
+引入C语言处比较复杂，通过一系列工具链将C语言和上述汇编文件链接起来形成haribote.sys可看作最终的操作系统，可以实现汇编和操作系统的混合开发。接着在汇编文件处编写名为_io_hlt的函数，经过编译器编译后，可以被C语言识别为io_hlt函数。
+
+在C语言处调用io_hlt即可实现CPU休眠。
+
+<img src="https://osimg.xwwwb.com/image_md/image-20230529211242634.png" alt="image-20230529211242634" style="zoom:80%;" />
 
 ### 第四天
 
-C 语言汇编混合编程 汇编实现了几个函数
+通过往显存中写值实现绘制图。这里新增了write_mem8函数，也是混合编程，像指定地址写入指定值，不过该函数后期会被指针替换。
 
-这里两个实验结果 使用 makefile 的变量切换编译的文件
+书本中使用循环往0xa0000和0xaffff处写值实现全屏色彩的更改。
+
+值得注意的是这里的范围其实超出了实际情况。因为320\*200\*8的屏幕，显存仅需要320*200 = 0xFA00 这么大的空间，即0xa0000到0xafa00。如果修改范围为0xa0000-0xafa00，屏幕照样全屏幕都可以显示，如果将此范围修改小一点点，可以看到屏幕右下角有很小的缺块。这里使用更大的范围，可能是因为后期提升分辨率后，适应更大的分辨率。
+
+接下来引入调色板模式，自定义每个色号对应的颜色。具体规则，初次读书没有读懂，放在了“疑问“中，相应解答也在“疑问”中。
+
+我这里两个实验结果 使用 makefile 的变量切换编译的文件
 
 一个是结合了计算机图形学的简单算法绘制图像 直接读写显存
 
 一个是书本的运行结果
+
+对于这个结果我也做了相应注释
+
+绘制多个色块，实现类似于浮雕的效果
+
+```C
+/* 根据 0xa0000 + x + y * 320 计算坐标 8*/
+// 屏幕上方的蓝绿色 也就是 类似桌面壁纸的东西
+boxfill8(vram, xsize, COL8_008484, 0, 0, xsize - 1, ysize - 29);
+// 任务栏的上边界的颜色 用于显示出浮雕的效果
+boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 28, xsize - 1, ysize - 28);
+// 任务栏的上边界的颜色 用于显示出浮雕的效果
+boxfill8(vram, xsize, COL8_FFFFFF, 0, ysize - 27, xsize - 1, ysize - 27);
+// 任务栏色彩填充
+boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 26, xsize - 1, ysize - 1);
+
+// 任务栏左边色块 上边界
+boxfill8(vram, xsize, COL8_FFFFFF, 3, ysize - 24, 59, ysize - 24);
+// 任务栏左边色块 左边界
+boxfill8(vram, xsize, COL8_FFFFFF, 2, ysize - 24, 2, ysize - 4);
+// 任务栏左边色块 下边界
+boxfill8(vram, xsize, COL8_848484, 3, ysize - 4, 59, ysize - 4);
+// 任务栏左边色块 右边界
+boxfill8(vram, xsize, COL8_848484, 59, ysize - 23, 59, ysize - 5);
+// 任务栏左边色块 下边界黑色条
+boxfill8(vram, xsize, COL8_000000, 2, ysize - 3, 59, ysize - 3);
+// 任务栏左边色块 右边界黑色条
+boxfill8(vram, xsize, COL8_000000, 60, ysize - 24, 60, ysize - 3);
+
+// 右边方块 上边界
+boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 24, xsize - 4, ysize - 24);
+// 右边方块 左边界
+boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 23, xsize - 47, ysize - 4);
+// 右边方块 下边界
+boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize - 3, xsize - 4, ysize - 3);
+// 右边方块 右边界
+boxfill8(vram, xsize, COL8_FFFFFF, xsize - 3, ysize - 24, xsize - 3, ysize - 3);
+```
+
+
 
 <img src="https://osimg.xwwwb.com/image_md/image-20230529211428060.png" alt="image-20230529211428060" style="zoom:80%;" />
 
@@ -1017,6 +1103,8 @@ static char font_A[16] = {
 
 ![image-20230601114415509](https://osimg.xwwwb.com/image_md/image-20230601114415509.png)
 
+后引入的hankaku.txt可以通过相应处理工具处理为数组的形式，可以使用他提供的ASCII字库
+
 在第五天我们还研究出如何更改入口函数
 
 是很蹩脚的方法，仅在这里做简单说明，没有找到更好的办法前，还是使用默认的入口函数
@@ -1025,9 +1113,35 @@ static char font_A[16] = {
 
 为了防止报错 还要 EXTERN 这个标识符 也要把 HariMain 暴漏出去
 
+实现了以下效果
+
 <img src="https://osimg.xwwwb.com/image_md/image-20230601115109731.png" alt="image-20230601115109731" style="zoom:50%;" />
 
 <img src="https://osimg.xwwwb.com/image_md/image-20230601115005589.png" alt="image-20230601115005589" style="zoom:60%;" />
+
+后又引入鼠标绘制函数以及GDT和IDT的初始化。
+
+在汇编保护模式下，访问内存时，也要采用段地址和偏移地址的形式，但是段地址不能直接访问内存，要使用段号，这里的段号就是GDT中注册的段号。
+
+GDT的具体参数配置比较复杂，主要用于向下兼容。他们的参数都由处理器规定好了。
+
+IDT是中断信息描述表，注册后可以自己注册自己的中断号码以及处理函数，注意处理函数的定位要采用GDT注册的段号。
+
+GDT表放入内存，首地址存入GDTR寄存器中，IDT首地址存入IDTR寄存器中。
+
+这两部分内容具体参数较为复杂，这里给出参考资料。
+
+https://blog.csdn.net/chungle2011/article/details/80069703?ydreferer=aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS8%3D
+
+https://blog.csdn.net/abc123lzf/article/details/109289567
+
+https://www.cnblogs.com/boyxiao/archive/2010/11/20/1882716.html
+
+https://blog.csdn.net/qq_22642239/article/details/70140859
+
+https://www.jianshu.com/p/55f805c8c379
+
+https://zhuanlan.zhihu.com/p/105939886
 
 ### 第六天
 
@@ -1035,7 +1149,9 @@ static char font_A[16] = {
 
 将 C 语言分割为多个带源文件和头文件的文件
 
-然后做了 PIC 的初始化可以接收中断
+然后做了 PIC 的初始化可以接收硬件来的中断信号
+
+关于load_gdtr的函数的计算方法，我在”疑问“处做了讲解
 
 然后使用栈的数据结构做了 CPU 现场保护
 
@@ -1043,13 +1159,15 @@ static char font_A[16] = {
 
 调用后恢复所有值 CPU 回到正常运行
 
-具体原理有些难 还在研读中
+然后再IDT表中注册鼠标和键盘中断处理函数。
+
+注册时，传入的函数相当于处理函数在当前段中的偏移地址(因为编译系统的时候，默认以段号0开始编译，所以函数地址就是偏移地址)，段地址就是2号，这在GDT初始化的时候，就将2号段注册为了操作系统文件运行的内存段。乘8是因为段选择子第三位有别的用处，用于权限控制。
 
 ![image-20230601120007632](https://osimg.xwwwb.com/image_md/image-20230601120007632.png)
 
 ### 第七天
 
-书本 126 页有写 0x60+IRQ 号输出给 OCW2 重启键盘的中断检测
+中断处理函数中 0x60+IRQ 号输出给 OCW2 重启中断检测
 
 ```clike
 void inthandler21(int *esp)
@@ -1064,7 +1182,6 @@ void inthandler21(int *esp)
 struct FIFO8 mousefifo;
 
 void inthandler2c(int *esp)
-/* PS/2�}�E�X����̊��荞�� */
 {
 	unsigned char data;
 	io_out8(PIC1_OCW2, 0x64);	// IRQ12位于从PIC的第四个地址
@@ -1075,7 +1192,15 @@ void inthandler2c(int *esp)
 }
 ```
 
-harib04g 新增代码为开启鼠标电路 有关重启中断的讲解也在上面写了
+然后使用数组的方式，建立了一个先入先出的数据结构，使用双指针指向数组头和尾，形成循环存储。该数据结构全书都将用到。
+
+将键盘接受的值存入缓冲区，然后在主函数中，判断缓冲区是否为空，不为空输出键盘信号。
+
+然后向硬件端口发送信号，启动鼠标和键盘电路。
+
+由于注册好了鼠标和键盘中断处理函数，又完成了缓冲区的建立，启动鼠标电路后，即刻就有鼠标信号传入。
+
+### <img src="./image_md/image-20230613112716614.png" alt="image-20230613112716614" style="zoom:50%;" />
 
 ### 第八天
 
