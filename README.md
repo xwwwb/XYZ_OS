@@ -1196,7 +1196,7 @@ void inthandler2c(int *esp)
 
 由于注册好了鼠标和键盘中断处理函数，又完成了缓冲区的建立，启动鼠标电路后，即刻就有鼠标信号传入。
 
-### <img src="./image_md/image-20230613112716614.png" alt="image-20230613112716614" style="zoom:50%;" />
+<img src="./image_md/image-20230613112716614.png" alt="image-20230613112716614" style="zoom:50%;" />
 
 ### 第八天
 

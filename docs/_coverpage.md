@@ -1,6 +1,6 @@
 ![logo](/image_md/logo.png)
 
-# XYZ OS <small>day4</small>
+# XYZ OS <small>Done</small>
 
 > 30 天手写操作系统
 
